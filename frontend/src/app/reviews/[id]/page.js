@@ -1,60 +1,101 @@
-import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+'use client'
 
-export default async function ReviewPage({ params }) {
-  const { id } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+import { useEffect, useState } from 'react'
+import { createClient } from '@/lib/supabase/client'
+import { ReviewHeader } from '@/components/review-header'
+import { FlagGroup } from '@/components/flag-group'
+import { useParams } from 'next/navigation'
 
-  if (!user) redirect('/')
+export default function ReviewPage() {
+  const { id } = useParams()
+  const [review, setReview] = useState(null)
+  const [flags, setFlags] = useState([])
+  const [loading, setLoading] = useState(true)
+  const supabase = createClient()
 
-  const { data: review } = await supabase
-    .from('reviews')
-    .select('*')
-    .eq('id', id)
-    .single()
+  useEffect(() => {
+    async function load() {
+      const res = await fetch(`http://localhost:8000/api/reviews/${id}`)
+      const data = await res.json()
+      setReview(data.review)
+      setFlags(data.flags ?? [])
+      setLoading(false)
+    }
+    load()
+  }, [id])
 
-  const { data: outputs } = await supabase
-    .from('agent_outputs')
-    .select('*')
-    .eq('review_id', id)
-    .order('completed_at')
+  // Supabase Realtime — update review status live while analyzing
+  useEffect(() => {
+    const channel = supabase
+      .channel(`review-${id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'reviews',
+          filter: `id=eq.${id}`,
+        },
+        (payload) => {
+          setReview(prev => ({ ...prev, ...payload.new }))
+          // Reload flags when analysis completes
+          if (payload.new.status === 'completed') {
+            fetch(`http://localhost:8000/api/reviews/${id}`)
+              .then(r => r.json())
+              .then(data => setFlags(data.flags ?? []))
+          }
+        }
+      )
+      .subscribe()
 
-  const agentLabels = {
-    code_reader: 'Code reader',
-    security_auditor: 'Security auditor',
-    improvement_suggester: 'Improvement suggester',
-    report_writer: 'Final report',
-  }
+    return () => supabase.removeChannel(channel)
+  }, [id])
+
+  if (loading) return (
+    <main className="min-h-screen bg-background">
+      <div className="max-w-4xl mx-auto px-4 py-10">
+        <p className="text-muted-foreground text-sm">Loading review...</p>
+      </div>
+    </main>
+  )
+
+  if (!review) return (
+    <main className="min-h-screen bg-background">
+      <div className="max-w-4xl mx-auto px-4 py-10">
+        <p className="text-destructive text-sm">Review not found.</p>
+      </div>
+    </main>
+  )
+
+  const decidedCount = flags.filter(f => f.user_decision !== null).length
 
   return (
     <main className="min-h-screen bg-background">
       <div className="max-w-4xl mx-auto px-4 py-10">
-        <div className="mb-8">
-          <h1 className="text-2xl font-semibold">{review?.pr_title}</h1>
-          <p className="text-muted-foreground text-sm mt-1">
-            PR #{review?.pr_number} by {review?.pr_author} ·{' '}
-            <span className="capitalize">{review?.status}</span>
-          </p>
-        </div>
+        <ReviewHeader
+          review={review}
+          flagCount={flags.length}
+          decidedCount={decidedCount}
+        />
 
-        <div className="flex flex-col gap-6">
-          {outputs?.map(output => (
-            <Card key={output.id}>
-              <CardHeader>
-                <CardTitle className="text-base">
-                  {agentLabels[output.agent_name] ?? output.agent_name}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <pre className="text-sm whitespace-pre-wrap text-muted-foreground font-sans leading-relaxed">
-                  {output.raw_output}
-                </pre>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        {review.status === 'analyzing' && (
+          <div className="flex items-center gap-3 py-12 justify-center">
+            <div className="w-4 h-4 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+            <p className="text-muted-foreground text-sm">
+              Agents are analyzing this PR...
+            </p>
+          </div>
+        )}
+
+        {review.status === 'failed' && (
+          <p className="text-destructive text-sm">
+            Analysis failed. Please try again.
+          </p>
+        )}
+
+        {review.status === 'completed' && (
+          <FlagGroup flags={flags} />
+        )}
       </div>
     </main>
   )

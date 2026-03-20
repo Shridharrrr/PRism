@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from supabase import create_client
 from agents.graph import prism_graph
+from agents.flag_parser import parse_flags_from_outputs
 from tools.github_tools import fetch_pr_diff, fetch_pr_metadata, fetch_open_prs
 from datetime import datetime, timezone
 import os
@@ -32,9 +33,19 @@ async def get_open_prs(owner: str, repo: str, token: str):
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+@router.get("/reviews/{review_id}")
+async def get_review(review_id: str):
+    review = supabase.table("reviews").select("*").eq("id", review_id).single().execute()
+    outputs = supabase.table("agent_outputs").select("*").eq("review_id", review_id).execute()
+    flags = supabase.table("flags").select("*").eq("review_id", review_id).execute()
+    return {
+        "review": review.data,
+        "agent_outputs": outputs.data,
+        "flags": flags.data,
+    }
+
 @router.post("/analyze")
 async def analyze_pr(req: AnalyzeRequest):
-    # Create review row with pending status
     review = supabase.table("reviews").insert({
         "repo_id": req.repo_id,
         "user_id": req.user_id,
@@ -48,11 +59,13 @@ async def analyze_pr(req: AnalyzeRequest):
     review_id = review.data[0]["id"]
 
     try:
-        # Fetch PR data from GitHub
-        diff = await fetch_pr_diff(req.owner, req.repo, req.pr_number, req.github_token)
-        metadata = await fetch_pr_metadata(req.owner, req.repo, req.pr_number, req.github_token)
+        diff = await fetch_pr_diff(
+            req.owner, req.repo, req.pr_number, req.github_token
+        )
+        metadata = await fetch_pr_metadata(
+            req.owner, req.repo, req.pr_number, req.github_token
+        )
 
-        # Run LangGraph pipeline
         result = await prism_graph.ainvoke({
             "diff": diff,
             "metadata": metadata,
@@ -74,16 +87,31 @@ async def analyze_pr(req: AnalyzeRequest):
              "raw_output": result["final_report"]},
         ]).execute()
 
-        # Update review status to complete
+        # Parse and save flags — non-fatal if this fails
+        try:
+            flags = await parse_flags_from_outputs(
+                review_id,
+                result["code_summary"],
+                result["security_findings"],
+                result["improvement_suggestions"],
+            )
+            if flags:
+                supabase.table("flags").insert(flags).execute()
+        except Exception as flag_error:
+            print(f"Flag parsing error (non-fatal): {flag_error}")
+
+        # Always mark completed if agents ran successfully
         supabase.table("reviews").update({
             "status": "completed",
             "completed_at": datetime.now(timezone.utc).isoformat(),
         }).eq("id", review_id).execute()
 
-        return {"review_id": review_id, "status": "completed", "result": result}
+        return {"review_id": review_id, "status": "completed"}
 
     except Exception as e:
+        # Mark failed only if the core pipeline broke
         supabase.table("reviews").update({
             "status": "failed"
         }).eq("id", review_id).execute()
+        print(f"Analysis error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
