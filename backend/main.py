@@ -1,10 +1,12 @@
+from dotenv import load_dotenv
+load_dotenv()
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from supabase import create_client
-from dotenv import load_dotenv
-import os
+from routers import reviews
 
-load_dotenv()
+import os
 
 app = FastAPI(title="PRism API")
 
@@ -20,6 +22,8 @@ supabase = create_client(
     os.getenv("SUPABASE_URL"),
     os.getenv("SUPABASE_SERVICE_ROLE_KEY")
 )
+
+app.include_router(reviews.router)
 
 @app.get("/health")
 def health():

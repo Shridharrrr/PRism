@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -11,24 +12,18 @@ export function RepoList({ accessToken, userId }) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const supabase = createClient()
+  const router = useRouter()
 
   useEffect(() => {
     async function load() {
-      // Debug: see what token we actually have
-      console.log('accessToken:', accessToken)
-
       const res = await fetch(
         'https://api.github.com/user/repos?sort=updated&per_page=30',
         { headers: { Authorization: `Bearer ${accessToken}` } }
       )
       const data = await res.json()
 
-      // Debug: see what GitHub returned
-      console.log('GitHub response:', data)
-
-      // GitHub returns an object with message field on error
       if (!Array.isArray(data)) {
-        setError(data.message || 'Failed to fetch repos from GitHub')
+        setError(data.message || 'Failed to fetch repos')
         setLoading(false)
         return
       }
@@ -80,13 +75,26 @@ export function RepoList({ accessToken, userId }) {
               {new Date(repo.updated_at).toLocaleDateString()}
             </p>
           </div>
-          <Button
-            size="sm"
-            variant={connected.has(repo.id) ? 'secondary' : 'default'}
-            onClick={() => !connected.has(repo.id) && connect(repo)}
-          >
-            {connected.has(repo.id) ? 'Connected' : 'Connect'}
-          </Button>
+          <div className="flex gap-2">
+            {connected.has(repo.id) && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() =>
+                  router.push(`/repos/${repo.owner.login}/${repo.name}/prs`)
+                }
+              >
+                View PRs
+              </Button>
+            )}
+            <Button
+              size="sm"
+              variant={connected.has(repo.id) ? 'secondary' : 'default'}
+              onClick={() => !connected.has(repo.id) && connect(repo)}
+            >
+              {connected.has(repo.id) ? 'Connected' : 'Connect'}
+            </Button>
+          </div>
         </Card>
       ))}
     </div>
