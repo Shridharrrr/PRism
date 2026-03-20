@@ -4,10 +4,10 @@ load_dotenv()
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from supabase import create_client
-from routers import reviews, flags
+from routers import reviews, flags, webhook
 import os
 
-app = FastAPI(title="PRism API")
+app = FastAPI(title="PRism API", redirect_slashes=False)
 
 app.add_middleware(
     CORSMiddleware,
@@ -24,15 +24,28 @@ supabase = create_client(
 
 app.include_router(reviews.router)
 app.include_router(flags.router)
+app.include_router(webhook.router)
+
 
 @app.get("/health")
 def health():
     return {"status": "ok", "service": "PRism API"}
+
 
 @app.get("/health/db")
 def health_db():
     try:
         supabase.table("profiles").select("id").limit(1).execute()
         return {"status": "ok", "database": "connected"}
+    except Exception as e:
+        return {"status": "error", "detail": str(e)}
+
+
+@app.get("/health/redis")
+def health_redis():
+    try:
+        from celery_app import celery
+        celery.backend.client.ping()
+        return {"status": "ok", "redis": "connected"}
     except Exception as e:
         return {"status": "error", "detail": str(e)}

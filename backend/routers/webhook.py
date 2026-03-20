@@ -1,0 +1,94 @@
+import hashlib
+import hmac
+import json
+import os
+from fastapi import APIRouter, Request, HTTPException
+from supabase import create_client
+from dotenv import load_dotenv
+
+load_dotenv()
+
+router = APIRouter(prefix="/api", tags=["webhooks"], redirect_slashes=False)
+
+supabase = create_client(
+    os.getenv("SUPABASE_URL"),
+    os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+)
+
+
+def verify_signature(payload: bytes, signature: str) -> bool:
+    secret = os.getenv("GITHUB_WEBHOOK_SECRET", "").encode()
+    expected = "sha256=" + hmac.new(
+        secret, payload, hashlib.sha256
+    ).hexdigest()
+    return hmac.compare_digest(expected, signature)
+
+
+@router.post("/webhooks/github")
+async def github_webhook(request: Request):
+    payload_bytes = await request.body()
+    signature = request.headers.get("x-hub-signature-256", "")
+
+    if not verify_signature(payload_bytes, signature):
+        raise HTTPException(status_code=401, detail="Invalid signature")
+
+    event = request.headers.get("x-github-event")
+    payload = json.loads(payload_bytes)
+
+    if event != "pull_request":
+        return {"status": "ignored", "reason": "not a pull_request event"}
+
+    action = payload.get("action")
+    if action not in ["opened", "reopened", "synchronize"]:
+        return {"status": "ignored", "reason": f"action '{action}' not tracked"}
+
+    repo_full_name = payload["repository"]["full_name"]
+    pr_number = payload["pull_request"]["number"]
+    pr_title = payload["pull_request"]["title"]
+    pr_url = payload["pull_request"]["html_url"]
+    pr_author = payload["pull_request"]["user"]["login"]
+    installation_id = payload["installation"]["id"]
+
+    # Look up repo in Supabase
+    result = supabase.table("repos").select(
+        "id, user_id, webhook_enabled"
+    ).eq("full_name", repo_full_name).execute()
+
+    if not result.data:
+        return {"status": "ignored", "reason": "repo not connected to PRism"}
+
+    repo = result.data[0]
+
+    if not repo["webhook_enabled"]:
+        return {"status": "ignored", "reason": "auto-trigger disabled"}
+
+    # Save installation_id for future token generation
+    supabase.table("repos").update(
+        {"installation_id": installation_id}
+    ).eq("id", repo["id"]).execute()
+
+    # Create review row
+    review = supabase.table("reviews").insert({
+        "repo_id": repo["id"],
+        "user_id": repo["user_id"],
+        "pr_number": pr_number,
+        "pr_title": pr_title,
+        "pr_url": pr_url,
+        "pr_author": pr_author,
+        "status": "queued",
+        "triggered_by": "webhook",
+        "installation_id": installation_id,
+    }).execute()
+
+    review_id = review.data[0]["id"]
+
+    # Queue the Celery task — returns to GitHub immediately
+    from tasks import analyze_pr_task
+    analyze_pr_task.delay(
+        repo_full_name=repo_full_name,
+        pr_number=pr_number,
+        installation_id=installation_id,
+        review_id=review_id
+    )
+
+    return {"status": "queued", "review_id": review_id}

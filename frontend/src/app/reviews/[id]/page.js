@@ -10,21 +10,24 @@ export default function ReviewPage() {
   const { id } = useParams()
   const [review, setReview] = useState(null)
   const [flags, setFlags] = useState([])
+  const [finalReport, setFinalReport] = useState(null)
   const [loading, setLoading] = useState(true)
   const supabase = createClient()
 
+  async function load() {
+    const res = await fetch(`http://localhost:8000/api/reviews/${id}`)
+    const data = await res.json()
+    setReview(data.review)
+    setFlags(data.flags ?? [])
+    const report = data.agent_outputs?.find(o => o.agent_name === 'report_writer')
+    setFinalReport(report?.raw_output ?? null)
+    setLoading(false)
+  }
+
   useEffect(() => {
-    async function load() {
-      const res = await fetch(`http://localhost:8000/api/reviews/${id}`)
-      const data = await res.json()
-      setReview(data.review)
-      setFlags(data.flags ?? [])
-      setLoading(false)
-    }
     load()
   }, [id])
 
-  // Supabase Realtime — update review status live while analyzing
   useEffect(() => {
     const channel = supabase
       .channel(`review-${id}`)
@@ -38,12 +41,7 @@ export default function ReviewPage() {
         },
         (payload) => {
           setReview(prev => ({ ...prev, ...payload.new }))
-          // Reload flags when analysis completes
-          if (payload.new.status === 'completed') {
-            fetch(`http://localhost:8000/api/reviews/${id}`)
-              .then(r => r.json())
-              .then(data => setFlags(data.flags ?? []))
-          }
+          if (payload.new.status === 'completed') load()
         }
       )
       .subscribe()
@@ -76,24 +74,23 @@ export default function ReviewPage() {
           review={review}
           flagCount={flags.length}
           decidedCount={decidedCount}
+          finalReport={finalReport}
         />
 
-        {review.status === 'analyzing' && (
+        {review.status === 'analyzing' || review.status === 'queued' ? (
           <div className="flex items-center gap-3 py-12 justify-center">
             <div className="w-4 h-4 rounded-full border-2 border-primary border-t-transparent animate-spin" />
             <p className="text-muted-foreground text-sm">
-              Agents are analyzing this PR...
+              {review.status === 'queued'
+                ? 'Waiting for worker to pick up the job...'
+                : 'Agents are analyzing this PR...'}
             </p>
           </div>
-        )}
-
-        {review.status === 'failed' && (
+        ) : review.status === 'failed' ? (
           <p className="text-destructive text-sm">
             Analysis failed. Please try again.
           </p>
-        )}
-
-        {review.status === 'completed' && (
+        ) : (
           <FlagGroup flags={flags} />
         )}
       </div>
