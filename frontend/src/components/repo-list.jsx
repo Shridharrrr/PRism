@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 export function RepoList({ accessToken, userId }) {
   const [repos, setRepos] = useState([])
   const [connected, setConnected] = useState(new Set())
+  const [webhookEnabled, setWebhookEnabled] = useState(new Set())
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const supabase = createClient()
@@ -32,10 +33,15 @@ export function RepoList({ accessToken, userId }) {
 
       const { data: saved } = await supabase
         .from('repos')
-        .select('github_repo_id')
+        .select('github_repo_id, webhook_enabled')
         .eq('user_id', userId)
 
-      if (saved) setConnected(new Set(saved.map(r => r.github_repo_id)))
+      if (saved) {
+        setConnected(new Set(saved.map(r => r.github_repo_id)))
+        setWebhookEnabled(new Set(
+          saved.filter(r => r.webhook_enabled).map(r => r.github_repo_id)
+        ))
+      }
       setLoading(false)
     }
     load()
@@ -49,8 +55,24 @@ export function RepoList({ accessToken, userId }) {
       name: repo.name,
       owner: repo.owner.login,
       private: repo.private,
+      webhook_enabled: false,
     })
     setConnected(prev => new Set(prev).add(repo.id))
+  }
+
+  const toggleWebhook = async (repo) => {
+    const isEnabled = webhookEnabled.has(repo.id)
+    await supabase
+      .from('repos')
+      .update({ webhook_enabled: !isEnabled })
+      .eq('github_repo_id', repo.id)
+      .eq('user_id', userId)
+
+    setWebhookEnabled(prev => {
+      const next = new Set(prev)
+      isEnabled ? next.delete(repo.id) : next.add(repo.id)
+      return next
+    })
   }
 
   if (loading) return (
@@ -77,15 +99,27 @@ export function RepoList({ accessToken, userId }) {
           </div>
           <div className="flex gap-2">
             {connected.has(repo.id) && (
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() =>
-                  router.push(`/repos/${repo.owner.login}/${repo.name}/prs`)
-                }
-              >
-                View PRs
-              </Button>
+              <>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() =>
+                    router.push(`/repos/${repo.owner.login}/${repo.name}/prs`)
+                  }
+                >
+                  View PRs
+                </Button>
+                <Button
+                  size="sm"
+                  variant={webhookEnabled.has(repo.id) ? 'default' : 'outline'}
+                  onClick={() => toggleWebhook(repo)}
+                  title={webhookEnabled.has(repo.id)
+                    ? 'Auto-trigger ON — click to disable'
+                    : 'Auto-trigger OFF — click to enable'}
+                >
+                  {webhookEnabled.has(repo.id) ? 'Auto ON' : 'Auto OFF'}
+                </Button>
+              </>
             )}
             <Button
               size="sm"
