@@ -70,7 +70,7 @@ export function PRList({ owner, repo, repoId, accessToken, userId }) {
         {[...Array(4)].map((_, i) => (
           <div
             key={i}
-            className="h-24 rounded-xl border border-border/50 bg-card/40 animate-pulse"
+            className="h-24 rounded-lg border border-border bg-muted/50 animate-pulse"
             style={{ animationDelay: `${i * 80}ms` }}
           />
         ))}
@@ -79,21 +79,21 @@ export function PRList({ owner, repo, repoId, accessToken, userId }) {
 
   if (error)
     return (
-      <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-6 text-center">
-        <div className="w-10 h-10 rounded-xl bg-destructive/10 border border-destructive/20 flex items-center justify-center mx-auto mb-3">
-          <GitPullRequest className="w-5 h-5 text-destructive" />
+      <div className="rounded-lg border border-red-200 bg-red-50 p-6 text-center">
+        <div className="w-10 h-10 rounded-lg bg-red-100 border border-red-200 flex items-center justify-center mx-auto mb-3">
+          <GitPullRequest className="w-5 h-5 text-red-600" />
         </div>
-        <p className="text-destructive text-sm font-medium mb-1">
+        <p className="text-red-900 text-sm font-medium mb-1">
           Error loading pull requests
         </p>
-        <p className="text-muted-foreground text-xs">{error}</p>
+        <p className="text-red-700 text-xs">{error}</p>
       </div>
     );
 
   if (prs.length === 0)
     return (
       <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
-        <div className="w-14 h-14 rounded-2xl bg-secondary border border-border/50 flex items-center justify-center">
+        <div className="w-14 h-14 rounded-xl bg-muted border border-border flex items-center justify-center">
           <GitMerge className="w-7 h-7 text-muted-foreground" />
         </div>
         <div>
@@ -102,7 +102,7 @@ export function PRList({ owner, repo, repoId, accessToken, userId }) {
           </p>
           <p className="text-sm text-muted-foreground max-w-xs">
             There are no open PRs in{" "}
-            <strong className="text-foreground/70">
+            <strong className="text-foreground">
               {owner}/{repo}
             </strong>{" "}
             right now.
@@ -121,27 +121,27 @@ export function PRList({ owner, repo, repoId, accessToken, userId }) {
       {prs.map((pr) => (
         <div
           key={pr.number}
-          className="group flex items-start gap-4 px-5 py-5 rounded-xl border border-border/50 bg-card/40 hover:border-primary/25 hover:bg-primary/5 transition-all duration-200"
+          className="group flex items-start gap-4 px-5 py-5 rounded-lg border border-border bg-card hover:border-foreground/20 hover:shadow-sm transition-all duration-200"
         >
           {/* PR icon with number */}
-          <div className="w-9 h-9 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0 mt-0.5">
-            <GitPullRequest className="w-4 h-4 text-primary" />
+          <div className="w-9 h-9 rounded-lg bg-muted border border-border flex items-center justify-center shrink-0 mt-0.5">
+            <GitPullRequest className="w-4 h-4 text-foreground" />
           </div>
 
           {/* PR details */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-              <span className="text-xs text-muted-foreground font-mono bg-secondary px-1.5 py-0.5 rounded">
+              <span className="text-xs text-muted-foreground font-mono bg-muted px-1.5 py-0.5 rounded">
                 #{pr.number}
               </span>
               {pr.draft && (
-                <span className="text-xs bg-secondary text-secondary-foreground border border-border/50 px-2 py-0.5 rounded-full">
+                <span className="text-xs bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full">
                   Draft
                 </span>
               )}
             </div>
 
-            <p className="font-semibold text-sm leading-snug mb-2.5 text-foreground group-hover:text-primary transition-colors">
+            <p className="font-semibold text-sm leading-snug mb-2.5 text-foreground group-hover:text-foreground/80 transition-colors">
               {pr.title}
             </p>
 
@@ -172,7 +172,7 @@ export function PRList({ owner, repo, repoId, accessToken, userId }) {
           <button
             onClick={() => analyze(pr)}
             disabled={analyzing[pr.number]}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg border border-primary/30 bg-primary/10 text-primary text-sm font-medium hover:bg-primary/20 hover:border-primary/50 transition-all shrink-0 mt-0.5 disabled:opacity-60 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 px-4 py-2 rounded-lg border border-foreground/20 bg-foreground text-background text-sm font-medium hover:bg-foreground/90 transition-all shrink-0 mt-0.5 disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {analyzing[pr.number] ? (
               <>

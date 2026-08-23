@@ -22,6 +22,8 @@ Analyze this diff and provide:
 3. The overall intent and approach
 4. Any immediate concerns about the implementation
 
+{metadata.get('prism_config', '')}
+
 Diff:
 {diff[:8000]}
 """

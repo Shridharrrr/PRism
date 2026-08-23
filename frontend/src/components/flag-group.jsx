@@ -8,22 +8,22 @@ const groupConfig = {
     label: "Critical",
     desc: "Must address before merging",
     icon: ShieldAlert,
-    color: "text-red-400",
-    bg: "bg-red-500/10 border-red-500/20",
+    color: "text-red-600",
+    bg: "bg-red-50 border-red-200",
   },
   warning: {
     label: "Warnings",
     desc: "Should address, review carefully",
     icon: AlertTriangle,
-    color: "text-amber-400",
-    bg: "bg-amber-500/10 border-amber-500/20",
+    color: "text-amber-600",
+    bg: "bg-amber-50 border-amber-200",
   },
   info: {
     label: "Suggestions",
     desc: "Nice-to-have improvements",
     icon: Info,
-    color: "text-blue-400",
-    bg: "bg-blue-500/10 border-blue-500/20",
+    color: "text-blue-600",
+    bg: "bg-blue-50 border-blue-200",
   },
 };
 
@@ -37,8 +37,8 @@ export function FlagGroup({ flags }) {
   if (Object.keys(grouped).length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
-        <div className="w-14 h-14 rounded-2xl bg-green-500/10 border border-green-500/20 flex items-center justify-center">
-          <CheckCircle className="w-7 h-7 text-green-400" />
+        <div className="w-14 h-14 rounded-xl bg-green-50 border border-green-200 flex items-center justify-center">
+          <CheckCircle className="w-7 h-7 text-green-600" />
         </div>
         <div>
           <p className="font-semibold text-foreground mb-1">No issues found</p>
@@ -75,7 +75,7 @@ export function FlagGroup({ flags }) {
                   </span>
                 </div>
               </div>
-              <span className="text-xs text-muted-foreground shrink-0 bg-secondary px-2 py-0.5 rounded-full">
+              <span className="text-xs text-muted-foreground shrink-0 bg-muted border border-border px-2 py-0.5 rounded-full">
                 {items.length} {items.length === 1 ? "flag" : "flags"}
               </span>
             </div>

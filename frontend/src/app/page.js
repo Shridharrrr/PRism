@@ -26,13 +26,13 @@ export default async function LandingPage() {
   return (
     <div className="min-h-screen bg-background flex flex-col overflow-x-hidden">
       {/* ── Navbar ─────────────────────────────────────── */}
-      <header className="fixed top-0 inset-x-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
-        <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
+      <header className="fixed top-0 inset-x-0 z-50 border-b border-border bg-background/80 backdrop-blur-xl">
+        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-primary/20 border border-primary/30 flex items-center justify-center">
-              <div className="w-3 h-3 rounded-sm bg-primary" />
+            <div className="w-8 h-8 rounded-lg bg-foreground flex items-center justify-center">
+              <div className="w-4 h-4 rounded bg-background" />
             </div>
-            <span className="font-semibold text-sm tracking-wide gradient-text-brand">
+            <span className="font-semibold text-lg tracking-tight text-foreground">
               PRism
             </span>
           </div>
@@ -41,59 +41,33 @@ export default async function LandingPage() {
       </header>
 
       {/* ── Hero ───────────────────────────────────────── */}
-      <section className="relative flex items-center justify-center min-h-screen pt-14">
-        {/* Background blobs */}
+      <section className="relative flex items-center justify-center min-h-screen pt-16">
+        {/* Subtle background gradient */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div
-            className="animate-blob absolute top-1/4 left-1/4 w-80 h-80 rounded-full"
+            className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full"
             style={{
               background:
-                "radial-gradient(circle, oklch(0.63 0.27 280 / 0.12), transparent 70%)",
-            }}
-          />
-          <div
-            className="animate-blob-delay-2 absolute top-1/3 right-1/4 w-96 h-96 rounded-full"
-            style={{
-              background:
-                "radial-gradient(circle, oklch(0.56 0.2 260 / 0.1), transparent 70%)",
-            }}
-          />
-          <div
-            className="animate-blob-delay-4 absolute bottom-1/4 left-1/3 w-64 h-64 rounded-full"
-            style={{
-              background:
-                "radial-gradient(circle, oklch(0.63 0.27 300 / 0.08), transparent 70%)",
+                "radial-gradient(ellipse 60% 50% at 50% 0%, oklch(0.96 0 0), transparent 70%)",
             }}
           />
         </div>
 
         {/* Grid pattern */}
-        <div className="absolute inset-0 grid-pattern opacity-60 pointer-events-none" />
-
-        {/* Radial fade at edges */}
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background:
-              "radial-gradient(ellipse 100% 80% at 50% 50%, transparent 40%, oklch(0.09 0.018 280) 100%)",
-          }}
-        />
+        <div className="absolute inset-0 grid-pattern opacity-40 pointer-events-none" />
 
         <div className="relative z-10 text-center max-w-4xl mx-auto px-6 py-20">
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-sm text-primary mb-8 animate-fade-up">
+          <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-1.5 text-sm text-foreground mb-8 shadow-sm">
             <Sparkles className="w-3.5 h-3.5" />
             <span>AI-Powered Code Review</span>
           </div>
 
           {/* Headline */}
-          <h1
-            className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight leading-tight mb-6"
-            style={{ animationDelay: "0.1s" }}
-          >
-            <span className="text-foreground">Code reviews that</span>
+          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.1] mb-6 text-foreground">
+            Code reviews that
             <br />
-            <span className="gradient-text-brand">actually matter</span>
+            <span className="text-foreground/70">actually matter</span>
           </h1>
 
           {/* Subheadline */}
@@ -115,14 +89,14 @@ export default async function LandingPage() {
           </div>
 
           {/* Mockup terminal card */}
-          <div className="relative mx-auto max-w-3xl animate-float">
-            <div className="rounded-xl border border-border/60 bg-card/80 backdrop-blur-sm overflow-hidden card-glow">
+          <div className="relative mx-auto max-w-3xl">
+            <div className="rounded-xl border border-border bg-card overflow-hidden shadow-lg">
               {/* terminal title bar */}
-              <div className="flex items-center gap-2 px-4 py-3 border-b border-border/50 bg-background/40">
+              <div className="flex items-center gap-2 px-4 py-3 border-b border-border bg-muted/50">
                 <div className="flex gap-1.5">
-                  <div className="w-3 h-3 rounded-full bg-red-500/80" />
-                  <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
-                  <div className="w-3 h-3 rounded-full bg-green-500/80" />
+                  <div className="w-3 h-3 rounded-full bg-red-500" />
+                  <div className="w-3 h-3 rounded-full bg-yellow-500" />
+                  <div className="w-3 h-3 rounded-full bg-green-500" />
                 </div>
                 <div className="flex-1 text-center">
                   <span className="text-xs text-muted-foreground font-mono">
@@ -132,28 +106,28 @@ export default async function LandingPage() {
               </div>
 
               {/* mock review content */}
-              <div className="p-6 text-left font-mono text-sm space-y-3">
+              <div className="p-6 text-left font-mono text-sm space-y-3 bg-muted/20">
                 <div className="flex items-center gap-3">
                   <span className="text-muted-foreground">Analyzing</span>
-                  <span className="text-primary font-semibold">
+                  <span className="text-foreground font-semibold">
                     feat/user-authentication #47
                   </span>
-                  <span className="text-xs bg-primary/15 text-primary border border-primary/25 rounded-full px-2 py-0.5">
+                  <span className="text-xs bg-green-50 text-green-700 border border-green-200 rounded-full px-2 py-0.5">
                     completed
                   </span>
                 </div>
 
-                <div className="h-px bg-border/50 my-2" />
+                <div className="h-px bg-border my-2" />
 
                 <div className="space-y-2.5">
-                  <div className="flex items-start gap-3 rounded-lg border border-red-500/20 bg-red-500/5 px-3 py-2.5">
-                    <span className="text-xs font-medium bg-red-500/15 text-red-400 border border-red-500/20 rounded-full px-2 py-0.5 shrink-0 mt-0.5">
+                  <div className="flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5">
+                    <span className="text-xs font-medium bg-red-100 text-red-700 border border-red-200 rounded-full px-2 py-0.5 shrink-0 mt-0.5">
                       critical
                     </span>
                     <div>
-                      <p className="text-foreground/90 text-xs">
+                      <p className="text-foreground text-xs">
                         SQL injection risk in{" "}
-                        <code className="text-red-400">getUserById()</code> —
+                        <code className="text-red-600 font-semibold">getUserById()</code> —
                         user input passed unsanitized to raw query
                       </p>
                       <p className="text-muted-foreground text-xs mt-1">
@@ -162,12 +136,12 @@ export default async function LandingPage() {
                     </div>
                   </div>
 
-                  <div className="flex items-start gap-3 rounded-lg border border-yellow-500/20 bg-yellow-500/5 px-3 py-2.5">
-                    <span className="text-xs font-medium bg-yellow-500/15 text-yellow-400 border border-yellow-500/20 rounded-full px-2 py-0.5 shrink-0 mt-0.5">
+                  <div className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5">
+                    <span className="text-xs font-medium bg-amber-100 text-amber-700 border border-amber-200 rounded-full px-2 py-0.5 shrink-0 mt-0.5">
                       warning
                     </span>
                     <div>
-                      <p className="text-foreground/90 text-xs">
+                      <p className="text-foreground text-xs">
                         JWT secret hardcoded as string literal, should use
                         environment variable
                       </p>
@@ -177,12 +151,12 @@ export default async function LandingPage() {
                     </div>
                   </div>
 
-                  <div className="flex items-start gap-3 rounded-lg border border-blue-500/20 bg-blue-500/5 px-3 py-2.5">
-                    <span className="text-xs font-medium bg-blue-500/15 text-blue-400 border border-blue-500/20 rounded-full px-2 py-0.5 shrink-0 mt-0.5">
+                  <div className="flex items-start gap-3 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2.5">
+                    <span className="text-xs font-medium bg-blue-100 text-blue-700 border border-blue-200 rounded-full px-2 py-0.5 shrink-0 mt-0.5">
                       info
                     </span>
                     <div>
-                      <p className="text-foreground/90 text-xs">
+                      <p className="text-foreground text-xs">
                         Consider adding rate limiting to auth endpoints to
                         prevent brute force attacks
                       </p>
@@ -196,7 +170,7 @@ export default async function LandingPage() {
                     critical
                   </span>
                   <span className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-yellow-500" />1
+                    <span className="w-2 h-2 rounded-full bg-amber-500" />1
                     warning
                   </span>
                   <span className="flex items-center gap-1.5">
@@ -205,27 +179,18 @@ export default async function LandingPage() {
                 </div>
               </div>
             </div>
-
-            {/* glow below card */}
-            <div
-              className="absolute -bottom-8 inset-x-0 h-24 pointer-events-none"
-              style={{
-                background:
-                  "radial-gradient(ellipse 60% 100% at 50% 100%, oklch(0.63 0.27 280 / 0.12), transparent)",
-              }}
-            />
           </div>
         </div>
       </section>
 
       {/* ── Features ───────────────────────────────────── */}
-      <section className="relative py-28 px-6">
+      <section className="relative py-24 px-6 bg-muted/30">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <p className="text-sm text-primary font-medium mb-3 uppercase tracking-widest">
+            <p className="text-sm text-muted-foreground font-medium mb-3 uppercase tracking-widest">
               Features
             </p>
-            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4 text-foreground">
               Everything you need for better code
             </h2>
             <p className="text-muted-foreground max-w-xl mx-auto">
@@ -240,41 +205,41 @@ export default async function LandingPage() {
                 icon: Shield,
                 title: "Security Auditor",
                 desc: "Detects SQL injection, XSS, hardcoded secrets, auth bypasses, and 50+ other vulnerability patterns.",
-                color: "text-red-400",
-                bg: "bg-red-500/10 border-red-500/20",
+                color: "text-red-600",
+                bg: "bg-red-50 border-red-200",
               },
               {
                 icon: Eye,
                 title: "Quality Inspector",
                 desc: "Identifies code smells, anti-patterns, missing error handling, and opportunities for cleaner architecture.",
-                color: "text-amber-400",
-                bg: "bg-amber-500/10 border-amber-500/20",
+                color: "text-amber-600",
+                bg: "bg-amber-50 border-amber-200",
               },
               {
                 icon: Zap,
                 title: "Instant Analysis",
                 desc: "Get detailed AI review results in seconds. Multiple specialized agents run in parallel for speed.",
-                color: "text-primary",
-                bg: "bg-primary/10 border-primary/20",
+                color: "text-foreground",
+                bg: "bg-muted border-border",
               },
               {
                 icon: Bell,
                 title: "Auto-Trigger",
                 desc: "Enable webhooks to automatically analyze every new PR the moment it's opened. Zero manual steps.",
-                color: "text-green-400",
-                bg: "bg-green-500/10 border-green-500/20",
+                color: "text-green-600",
+                bg: "bg-green-50 border-green-200",
               },
             ].map(({ icon: Icon, title, desc, color, bg }) => (
               <div
                 key={title}
-                className="rounded-xl border border-border/60 bg-card/50 p-6 card-hover"
+                className="rounded-lg border bg-card p-6 hover:shadow-md transition-shadow"
               >
                 <div
                   className={`w-10 h-10 rounded-lg border ${bg} flex items-center justify-center mb-4`}
                 >
                   <Icon className={`w-5 h-5 ${color}`} />
                 </div>
-                <h3 className="font-semibold text-sm mb-2">{title}</h3>
+                <h3 className="font-semibold text-sm mb-2 text-foreground">{title}</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">
                   {desc}
                 </p>
@@ -285,22 +250,13 @@ export default async function LandingPage() {
       </section>
 
       {/* ── How it works ───────────────────────────────── */}
-      <section id="how-it-works" className="relative py-28 px-6">
-        {/* subtle divider gradient */}
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background:
-              "radial-gradient(ellipse 80% 60% at 50% 50%, oklch(0.63 0.27 280 / 0.04), transparent)",
-          }}
-        />
-
+      <section id="how-it-works" className="relative py-24 px-6">
         <div className="relative max-w-5xl mx-auto">
           <div className="text-center mb-16">
-            <p className="text-sm text-primary font-medium mb-3 uppercase tracking-widest">
+            <p className="text-sm text-muted-foreground font-medium mb-3 uppercase tracking-widest">
               How it works
             </p>
-            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4 text-foreground">
               Up and running in minutes
             </h2>
             <p className="text-muted-foreground max-w-xl mx-auto">
@@ -312,11 +268,7 @@ export default async function LandingPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
             {/* connector line */}
             <div
-              className="hidden md:block absolute top-8 left-1/3 right-1/3 h-px"
-              style={{
-                background:
-                  "linear-gradient(to right, transparent, oklch(0.63 0.27 280 / 0.4), transparent)",
-              }}
+              className="hidden md:block absolute top-8 left-1/3 right-1/3 h-px bg-border"
             />
 
             {[
@@ -343,13 +295,13 @@ export default async function LandingPage() {
                 key={step}
                 className="relative flex flex-col items-center text-center"
               >
-                <div className="w-16 h-16 rounded-2xl border border-primary/30 bg-primary/10 flex items-center justify-center mb-5 relative">
-                  <Icon className="w-7 h-7 text-primary" />
-                  <span className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center font-bold leading-none">
+                <div className="w-16 h-16 rounded-xl border border-border bg-card flex items-center justify-center mb-5 relative shadow-sm">
+                  <Icon className="w-7 h-7 text-foreground" />
+                  <span className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-foreground text-background text-xs flex items-center justify-center font-bold">
                     {parseInt(step)}
                   </span>
                 </div>
-                <h3 className="font-semibold mb-2">{title}</h3>
+                <h3 className="font-semibold mb-2 text-foreground">{title}</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">
                   {desc}
                 </p>
@@ -360,30 +312,30 @@ export default async function LandingPage() {
       </section>
 
       {/* ── Flags breakdown ────────────────────────────── */}
-      <section className="py-20 px-6">
+      <section className="py-20 px-6 bg-muted/30">
         <div className="max-w-5xl mx-auto">
-          <div className="rounded-2xl border border-border/60 bg-card/40 overflow-hidden">
-            <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-border/50">
+          <div className="rounded-lg border border-border bg-card overflow-hidden shadow-sm">
+            <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-border">
               {[
                 {
                   label: "Critical",
                   value: "Must fix",
                   desc: "Security vulnerabilities, data exposure, authentication flaws",
-                  color: "text-red-400",
+                  color: "text-red-600",
                   dot: "bg-red-500",
                 },
                 {
                   label: "Warning",
                   value: "Should fix",
                   desc: "Code quality issues, anti-patterns, missing validations",
-                  color: "text-amber-400",
+                  color: "text-amber-600",
                   dot: "bg-amber-500",
                 },
                 {
                   label: "Info",
                   value: "Nice to have",
                   desc: "Suggestions, improvements, best practice recommendations",
-                  color: "text-blue-400",
+                  color: "text-blue-600",
                   dot: "bg-blue-500",
                 },
               ].map(({ label, value, desc, color, dot }) => (
@@ -392,7 +344,7 @@ export default async function LandingPage() {
                     <div className={`w-2.5 h-2.5 rounded-full ${dot}`} />
                     <span className={`font-semibold ${color}`}>{label}</span>
                   </div>
-                  <p className="text-2xl font-bold mb-1">{value}</p>
+                  <p className="text-2xl font-bold mb-1 text-foreground">{value}</p>
                   <p className="text-sm text-muted-foreground">{desc}</p>
                 </div>
               ))}
@@ -402,23 +354,16 @@ export default async function LandingPage() {
       </section>
 
       {/* ── CTA ────────────────────────────────────────── */}
-      <section className="relative py-28 px-6 overflow-hidden">
+      <section className="relative py-24 px-6">
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute inset-0 grid-pattern opacity-40" />
-          <div
-            className="absolute inset-0"
-            style={{
-              background:
-                "radial-gradient(ellipse 70% 60% at 50% 50%, oklch(0.63 0.27 280 / 0.1), transparent)",
-            }}
-          />
+          <div className="absolute inset-0 grid-pattern opacity-30" />
         </div>
 
         <div className="relative max-w-2xl mx-auto text-center">
-          <div className="w-14 h-14 rounded-2xl border border-primary/30 bg-primary/10 flex items-center justify-center mx-auto mb-6">
-            <Lock className="w-6 h-6 text-primary" />
+          <div className="w-14 h-14 rounded-xl border border-border bg-card flex items-center justify-center mx-auto mb-6 shadow-sm">
+            <Lock className="w-6 h-6 text-foreground" />
           </div>
-          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">
+          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4 text-foreground">
             Catch bugs before they ship
           </h2>
           <p className="text-muted-foreground mb-10 max-w-lg mx-auto">
@@ -430,13 +375,13 @@ export default async function LandingPage() {
       </section>
 
       {/* ── Footer ─────────────────────────────────────── */}
-      <footer className="border-t border-border/50 py-8 px-6 mt-auto">
+      <footer className="border-t border-border py-8 px-6 mt-auto bg-muted/30">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <div className="w-5 h-5 rounded bg-primary/20 border border-primary/30 flex items-center justify-center">
-              <div className="w-2.5 h-2.5 rounded-sm bg-primary" />
+            <div className="w-6 h-6 rounded-lg bg-foreground flex items-center justify-center">
+              <div className="w-3 h-3 rounded bg-background" />
             </div>
-            <span className="font-semibold text-sm gradient-text-brand">
+            <span className="font-semibold text-sm text-foreground">
               PRism
             </span>
           </div>

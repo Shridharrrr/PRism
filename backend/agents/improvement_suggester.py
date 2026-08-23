@@ -2,7 +2,7 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import HumanMessage
 import os
 
-async def run_improvement_suggester(diff: str, code_summary: str) -> str:
+async def run_improvement_suggester(diff: str, code_summary: str, metadata: dict = {}) -> str:
     llm = ChatGoogleGenerativeAI(
         model="gemini-2.5-flash",
         temperature=0.3,
@@ -20,6 +20,8 @@ Review this diff for improvements. For each issue found provide:
 - LINE: approximate line number if visible
 - DESCRIPTION: what the issue is
 - SUGGESTION: concrete improvement
+
+{metadata.get('prism_config', '')}
 
 Format each finding as:
 [SEVERITY] TYPE | FILE:LINE

@@ -8,6 +8,7 @@ import { AnalysisGraph } from "@/components/analysis-graph";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { ChatWidget } from "@/components/chat-widget";
 
 export default function ReviewPage() {
   const { id } = useParams();
@@ -73,18 +74,14 @@ export default function ReviewPage() {
     return (
       <div className="min-h-screen bg-background flex flex-col">
         {/* minimal nav */}
-        <header className="sticky top-0 z-40 border-b border-border/50 bg-background/90 backdrop-blur-xl">
-          <div className="max-w-5xl mx-auto px-6 h-14 flex items-center">
+        <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-xl">
+          <div className="max-w-5xl mx-auto px-6 h-16 flex items-center">
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-md bg-primary/20 border border-primary/30 flex items-center justify-center">
-                <div className="w-3 h-3 rounded-sm bg-primary" />
+              <div className="w-8 h-8 rounded-lg bg-foreground flex items-center justify-center">
+                <div className="w-4 h-4 rounded bg-background" />
               </div>
               <span
-                className="font-semibold text-sm bg-clip-text text-transparent"
-                style={{
-                  backgroundImage:
-                    "linear-gradient(135deg, #a78bfa, #818cf8, #c4b5fd)",
-                }}
+                className="font-semibold text-lg tracking-tight text-foreground"
               >
                 PRism
               </span>
@@ -140,27 +137,23 @@ export default function ReviewPage() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Navbar */}
-      <header className="sticky top-0 z-40 border-b border-border/50 bg-background/90 backdrop-blur-xl">
-        <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between gap-4">
+      <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-xl">
+        <div className="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 min-w-0">
             <Link
               href="/repos"
               className="flex items-center gap-2 shrink-0 group"
             >
-              <div className="w-6 h-6 rounded-md bg-primary/20 border border-primary/30 flex items-center justify-center transition-colors group-hover:bg-primary/30">
-                <div className="w-3 h-3 rounded-sm bg-primary" />
+              <div className="w-8 h-8 rounded-lg bg-foreground flex items-center justify-center transition-colors group-hover:opacity-80">
+                <div className="w-4 h-4 rounded bg-background" />
               </div>
               <span
-                className="font-semibold text-sm bg-clip-text text-transparent"
-                style={{
-                  backgroundImage:
-                    "linear-gradient(135deg, #a78bfa, #818cf8, #c4b5fd)",
-                }}
+                className="font-semibold text-lg tracking-tight text-foreground"
               >
                 PRism
               </span>
             </Link>
-            <span className="text-border/80 text-sm select-none">/</span>
+            <span className="text-border text-sm select-none">/</span>
             <span className="text-sm text-muted-foreground truncate">
               Review
             </span>
@@ -188,9 +181,9 @@ export default function ReviewPage() {
             <AnalysisGraph review={review} flags={flags} />
           </div>
         ) : review.status === "failed" ? (
-          <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-6 text-center">
-            <p className="text-destructive font-medium mb-1">Analysis failed</p>
-            <p className="text-sm text-muted-foreground">
+          <div className="rounded-lg border border-red-200 bg-red-50 p-6 text-center">
+            <p className="text-red-900 font-medium mb-1">Analysis failed</p>
+            <p className="text-sm text-red-700">
               Something went wrong while analyzing this PR. Please try again.
             </p>
           </div>
@@ -198,6 +191,7 @@ export default function ReviewPage() {
           <FlagGroup flags={flags} />
         )}
       </main>
+      <ChatWidget reviewId={id} />
     </div>
   );
 }

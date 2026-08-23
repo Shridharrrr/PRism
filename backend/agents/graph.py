@@ -20,8 +20,8 @@ async def code_reader_node(state: PRismState) -> dict:
 
 async def parallel_analysis_node(state: PRismState) -> dict:
     security, improvements = await asyncio.gather(
-        run_security_auditor(state["diff"], state["code_summary"]),
-        run_improvement_suggester(state["diff"], state["code_summary"])
+        run_security_auditor(state["diff"], state["code_summary"], state["metadata"]),
+        run_improvement_suggester(state["diff"], state["code_summary"], state["metadata"])
     )
     return {
         "security_findings": security,

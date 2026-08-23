@@ -39,18 +39,18 @@ export default async function PRsPage({ params }) {
         {/* Page header */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-9 h-9 rounded-xl bg-primary/15 border border-primary/25 flex items-center justify-center">
-              <GitPullRequest className="w-4 h-4 text-primary" />
+            <div className="w-10 h-10 rounded-lg bg-muted border border-border flex items-center justify-center">
+              <GitPullRequest className="w-5 h-5 text-foreground" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold tracking-tight">
+              <h1 className="text-3xl font-bold tracking-tight text-foreground">
                 {owner}/{repo}
               </h1>
             </div>
           </div>
-          <p className="text-muted-foreground text-sm ml-12">
+          <p className="text-muted-foreground text-sm ml-[52px]">
             Open pull requests — click{" "}
-            <strong className="text-foreground/70">Analyze PR</strong> to run
+            <strong className="text-foreground">Analyze PR</strong> to run
             the AI review
           </p>
         </div>

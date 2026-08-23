@@ -15,6 +15,21 @@ supabase = create_client(
     os.getenv("SUPABASE_SERVICE_ROLE_KEY")
 )
 
+from pydantic import BaseModel
+
+class RepoSettings(BaseModel):
+    slack_webhook_url: str
+
+@router.patch("/repos/{repo_id}/settings")
+async def update_repo_settings(repo_id: str, req: RepoSettings):
+    try:
+        supabase.table("repos").update({"slack_webhook_url": req.slack_webhook_url}).eq("id", repo_id).execute()
+    except Exception as e:
+        print(f"Schema might not support slack_webhook_url: {e}")
+        with open(f"slack_{repo_id}.txt", "w") as f:
+            f.write(req.slack_webhook_url)
+    return {"status": "success"}
+
 
 def verify_signature(payload: bytes, signature: str) -> bool:
     secret = os.getenv("GITHUB_WEBHOOK_SECRET", "").encode()
@@ -48,6 +63,7 @@ async def github_webhook(request: Request):
     pr_url = payload["pull_request"]["html_url"]
     pr_author = payload["pull_request"]["user"]["login"]
     installation_id = payload["installation"]["id"]
+    head_sha = payload["pull_request"]["head"]["sha"]
 
     # Look up repo in Supabase
     result = supabase.table("repos").select(
@@ -88,7 +104,8 @@ async def github_webhook(request: Request):
         repo_full_name=repo_full_name,
         pr_number=pr_number,
         installation_id=installation_id,
-        review_id=review_id
+        review_id=review_id,
+        head_sha=head_sha
     )
 
     return {"status": "queued", "review_id": review_id}

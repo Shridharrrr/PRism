@@ -12,6 +12,7 @@ import {
   BellOff,
   Loader2,
   Search,
+  Settings,
 } from "lucide-react";
 
 export function RepoList({ accessToken, userId }) {
@@ -99,13 +100,13 @@ export function RepoList({ accessToken, userId }) {
     return (
       <div className="flex flex-col gap-4">
         <div className="relative">
-          <div className="w-full h-11 rounded-xl border border-border/50 bg-card/40 animate-pulse" />
+          <div className="w-full h-11 rounded-lg border border-border bg-muted/50 animate-pulse" />
         </div>
         <div className="flex flex-col gap-2">
           {[...Array(7)].map((_, i) => (
             <div
               key={i}
-              className="h-[68px] rounded-xl border border-border/50 bg-card/40 animate-pulse"
+              className="h-[68px] rounded-lg border border-border bg-muted/50 animate-pulse"
             />
           ))}
         </div>
@@ -114,11 +115,14 @@ export function RepoList({ accessToken, userId }) {
 
   if (error)
     return (
-      <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-6 text-center">
-        <p className="text-destructive text-sm font-medium mb-1">
+      <div className="rounded-lg border border-red-200 bg-red-50 p-6 text-center">
+        <div className="w-10 h-10 rounded-lg bg-red-100 border border-red-200 flex items-center justify-center mx-auto mb-3">
+          <GitPullRequest className="w-5 h-5 text-red-600" />
+        </div>
+        <p className="text-red-900 text-sm font-medium mb-1">
           Failed to load repositories
         </p>
-        <p className="text-muted-foreground text-xs">{error}</p>
+        <p className="text-red-700 text-xs">{error}</p>
       </div>
     );
 
@@ -132,7 +136,7 @@ export function RepoList({ accessToken, userId }) {
           placeholder="Search repositories..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full rounded-xl border border-border/60 bg-card/50 pl-10 pr-4 py-2.5 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/50 transition-all"
+          className="w-full rounded-lg border border-border bg-background pl-10 pr-4 py-2.5 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-foreground/20 focus:border-foreground transition-all"
         />
       </div>
 
@@ -140,7 +144,7 @@ export function RepoList({ accessToken, userId }) {
       <div className="flex items-center gap-3 px-1 text-xs text-muted-foreground">
         <span>{repos.length} repositories</span>
         <span className="w-1 h-1 rounded-full bg-border" />
-        <span className="text-primary font-medium">
+        <span className="text-foreground font-medium">
           {connected.size} connected
         </span>
       </div>
@@ -163,29 +167,29 @@ export function RepoList({ accessToken, userId }) {
           return (
             <div
               key={repo.id}
-              className={`group flex items-center gap-4 px-5 py-3.5 rounded-xl border transition-all duration-200 ${
+              className={`group flex items-center gap-4 px-5 py-3.5 rounded-lg border transition-all duration-200 ${
                 isConnected
-                  ? "border-primary/25 bg-primary/5 hover:border-primary/40 hover:bg-primary/8"
-                  : "border-border/50 bg-card/40 hover:border-border hover:bg-card/70"
+                  ? "border-border bg-muted/50 hover:bg-muted"
+                  : "border-border bg-card hover:border-foreground/20 hover:shadow-sm"
               }`}
             >
               {/* Icon */}
               <div
                 className={`w-8 h-8 rounded-lg border flex items-center justify-center shrink-0 ${
                   isConnected
-                    ? "bg-primary/15 border-primary/25"
-                    : "bg-secondary border-border/50"
+                    ? "bg-foreground/10 border-foreground/20"
+                    : "bg-muted border-border"
                 }`}
               >
                 <GitFork
-                  className={`w-4 h-4 ${isConnected ? "text-primary" : "text-muted-foreground"}`}
+                  className={`w-4 h-4 ${isConnected ? "text-foreground" : "text-muted-foreground"}`}
                 />
               </div>
 
               {/* Repo info */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5 mb-0.5">
-                  <p className="font-medium text-sm truncate">
+                  <p className="font-medium text-sm truncate text-foreground">
                     {repo.full_name}
                   </p>
                   {repo.private ? (
@@ -223,8 +227,8 @@ export function RepoList({ accessToken, userId }) {
                       }
                       className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
                         isWebhookOn
-                          ? "bg-green-500/15 border-green-500/25 text-green-400 hover:bg-green-500/25"
-                          : "bg-secondary border-border/50 text-muted-foreground hover:text-foreground hover:border-border"
+                          ? "bg-green-50 border-green-200 text-green-700 hover:bg-green-100"
+                          : "bg-muted border-border text-muted-foreground hover:text-foreground hover:border-foreground/30"
                       }`}
                     >
                       {isWebhookOn ? (
@@ -244,17 +248,29 @@ export function RepoList({ accessToken, userId }) {
                           `/repos/${repo.owner.login}/${repo.name}/prs`,
                         )
                       }
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-primary/30 bg-primary/10 text-primary hover:bg-primary/20 hover:border-primary/50 transition-all"
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-foreground/20 bg-foreground text-background hover:bg-foreground/90 transition-all"
                     >
                       View PRs
                       <ChevronRight className="w-3 h-3" />
+                    </button>
+                    {/* Settings */}
+                    <button
+                      onClick={() =>
+                        router.push(
+                          `/repos/${repo.owner.login}/${repo.name}/settings`,
+                        )
+                      }
+                      title="Settings"
+                      className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg border border-border bg-card text-muted-foreground hover:text-foreground hover:bg-muted transition-all"
+                    >
+                      <Settings className="w-4 h-4" />
                     </button>
                   </>
                 ) : (
                   <button
                     onClick={() => !isConnecting && connect(repo)}
                     disabled={isConnecting}
-                    className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-medium border border-border/60 bg-secondary text-secondary-foreground hover:border-primary/30 hover:bg-primary/10 hover:text-primary transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-medium border border-border bg-card text-foreground hover:border-foreground/30 hover:bg-muted transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isConnecting ? (
                       <>

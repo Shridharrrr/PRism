@@ -53,3 +53,74 @@ async def fetch_open_prs(owner: str, repo: str, token: str) -> list:
             }
             for pr in data
         ]
+
+async def create_check_run(owner: str, repo: str, head_sha: str, token: str) -> dict:
+    url = f"https://api.github.com/repos/{owner}/{repo}/check-runs"
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Accept": "application/vnd.github.v3+json",
+    }
+    data = {
+        "name": "PRism AI Review",
+        "head_sha": head_sha,
+        "status": "in_progress"
+    }
+    async with httpx.AsyncClient() as client:
+        response = await client.post(url, headers=headers, json=data)
+        if response.status_code >= 400:
+            print(f"Failed to create check run: {response.text}")
+            return {}
+        return response.json()
+
+async def update_check_run(owner: str, repo: str, check_run_id: int, status: str, conclusion: str, output: dict, token: str) -> dict:
+    url = f"https://api.github.com/repos/{owner}/{repo}/check-runs/{check_run_id}"
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Accept": "application/vnd.github.v3+json",
+    }
+    data = {
+        "status": status,
+        "conclusion": conclusion,
+        "output": output
+    }
+    async with httpx.AsyncClient() as client:
+        response = await client.patch(url, headers=headers, json=data)
+        if response.status_code >= 400:
+            print(f"Failed to update check run: {response.text}")
+            return {}
+        return response.json()
+
+async def post_inline_comment(owner: str, repo: str, pr_number: int, commit_id: str, path: str, line: int, body: str, token: str) -> dict:
+    url = f"https://api.github.com/repos/{owner}/{repo}/pulls/{pr_number}/comments"
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Accept": "application/vnd.github.v3+json",
+    }
+    data = {
+        "body": body,
+        "commit_id": commit_id,
+        "path": path,
+        "line": line,
+        "side": "RIGHT"
+    }
+    async with httpx.AsyncClient() as client:
+        response = await client.post(url, headers=headers, json=data)
+        if response.status_code >= 400:
+            print(f"Failed to post comment: {response.text}")
+            return {}
+        return response.json()
+
+async def fetch_repo_file(owner: str, repo: str, path: str, ref: str, token: str) -> str:
+    url = f"https://api.github.com/repos/{owner}/{repo}/contents/{path}?ref={ref}"
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Accept": "application/vnd.github.v3.raw",
+    }
+    async with httpx.AsyncClient(follow_redirects=True) as client:
+        response = await client.get(url, headers=headers)
+        if response.status_code == 404:
+            return None
+        if response.status_code >= 400:
+            print(f"Failed to fetch file: {response.text}")
+            return None
+        return response.text
