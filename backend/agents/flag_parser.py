@@ -67,7 +67,7 @@ Example:
     try:
         flags = json.loads(raw)
 
-        # Sanitize — only keep columns that exist in the table
+        # Sanitize - only keep columns that exist in the table
         allowed_keys = {
             "review_id", "type", "severity", "agent",
             "file_path", "line_start", "line_end",

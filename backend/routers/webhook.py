@@ -104,7 +104,7 @@ async def handle_pull_request_event(payload: dict):
 
     review_id = review.data[0]["id"]
 
-    # Queue the Celery task — returns to GitHub immediately
+    # Queue the Celery task - returns to GitHub immediately
     from tasks import analyze_pr_task
     analyze_pr_task.delay(
         repo_full_name=repo_full_name,

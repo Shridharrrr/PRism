@@ -34,43 +34,36 @@ export function AppSidebar({ isOpen = true, onOpenChange }) {
       )}
     >
       <div className="flex h-full flex-col">
-        <div className="flex h-16 items-center justify-between border-b border-sidebar-border px-4">
+        <div className="relative flex h-16 items-center px-4 border-b border-sidebar-border">
           <Link
             href="/dashboard"
             className={cn(
-              "flex items-center gap-2 overflow-hidden transition-opacity",
-              !isOpen && "opacity-0 pointer-events-none"
+              "flex items-center gap-3 overflow-hidden transition-all duration-300",
+              !isOpen && "opacity-0 hidden"
             )}
           >
-            <div className="w-8 h-8 rounded-lg bg-sidebar-primary flex items-center justify-center flex-shrink-0">
-              <div className="w-4 h-4 rounded bg-sidebar-primary-foreground" />
+            <div className="w-8 h-8 bg-sidebar-foreground flex items-center justify-center flex-shrink-0 transition-transform hover:scale-95">
+              <div className="w-3 h-3 bg-sidebar" />
             </div>
-            <span className="font-semibold text-lg tracking-tight text-sidebar-foreground whitespace-nowrap">
-              PRism
-            </span>
+            
+            {isOpen && (
+              <span className="font-bold text-xl tracking-tight text-sidebar-foreground whitespace-nowrap">
+                PRism
+              </span>
+            )}
           </Link>
-
-          {!isOpen && (
-            <Link
-              href="/dashboard"
-              className="absolute left-4 w-8 h-8 rounded-lg bg-sidebar-primary flex items-center justify-center"
-              aria-label="PRism dashboard"
-            >
-              <div className="w-4 h-4 rounded bg-sidebar-primary-foreground" />
-            </Link>
-          )}
 
           <button
             onClick={() => onOpenChange?.(!isOpen)}
             className={cn(
-              "w-8 h-8 rounded-lg border border-sidebar-border hover:bg-sidebar-accent transition-colors flex items-center justify-center",
-              !isOpen && "absolute right-3"
+              "w-8 h-8 bg-sidebar border border-sidebar-border rounded-none hover:bg-sidebar-accent transition-colors flex items-center justify-center shadow-sm z-50",
+              isOpen ? "absolute right-3 top-4" : "mx-auto mt-4"
             )}
             aria-label={isOpen ? "Collapse sidebar" : "Expand sidebar"}
           >
             <ChevronLeft
               className={cn(
-                "h-4 w-4 transition-transform duration-300",
+                "h-4 w-4 text-sidebar-foreground transition-transform duration-300",
                 !isOpen && "rotate-180"
               )}
             />

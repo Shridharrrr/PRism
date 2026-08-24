@@ -116,7 +116,7 @@ async def analyze_pr(req: AnalyzeRequest):
              "raw_output": result["final_report"]},
         ]).execute()
 
-        # Parse and save flags — non-fatal if this fails
+        # Parse and save flags - non-fatal if this fails
         try:
             flags = await parse_flags_from_outputs(
                 review_id,

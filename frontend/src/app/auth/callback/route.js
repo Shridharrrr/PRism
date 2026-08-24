@@ -11,7 +11,7 @@ export async function GET(request) {
     const { data, error } = await supabase.auth.exchangeCodeForSession(code)
 
     if (!error && data.session) {
-      // provider_token is the GitHub access token — save it to profiles
+      // provider_token is the GitHub access token - save it to profiles
       const providerToken = data.session.provider_token
 
       if (providerToken) {

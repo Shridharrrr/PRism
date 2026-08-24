@@ -2,13 +2,12 @@
 
 import { useEffect, useState } from "react";
 import {
-  TrendingUp,
-  TrendingDown,
-  Minus,
   FileSearch,
   ShieldAlert,
   CheckCircle2,
   Timer,
+  ArrowUpRight,
+  ArrowDownRight,
 } from "lucide-react";
 
 function AnimatedNumber({ value, duration = 1000 }) {
@@ -42,91 +41,107 @@ function AnimatedNumber({ value, duration = 1000 }) {
 export function StatsCards({ stats }) {
   const cards = [
     {
-      label: "Total Reviews",
-      value: stats.totalReviews || 0,
-      change: stats.reviewsChange || 0,
-      icon: FileSearch,
-      color: "text-chart-1",
-      iconBg: "bg-chart-1/10 text-chart-1",
-    },
-    {
       label: "Critical Issues Caught",
       value: stats.criticalIssues || 0,
       change: stats.criticalChange || 0,
       icon: ShieldAlert,
-      color: "text-error",
-      iconBg: "bg-error/10 text-error",
+      hierarchy: "primary",
+    },
+    {
+      label: "Total Reviews",
+      value: stats.totalReviews || 0,
+      change: stats.reviewsChange || 0,
+      icon: FileSearch,
+      hierarchy: "secondary",
     },
     {
       label: "PRs Auto-Approved",
       value: stats.autoApproved || 0,
       change: stats.approvedChange || 0,
       icon: CheckCircle2,
-      color: "text-success",
-      iconBg: "bg-success/10 text-success",
+      hierarchy: "secondary",
     },
     {
       label: "Avg Review Time",
       value: `${stats.avgReviewTime || 0}m`,
       change: stats.timeChange || 0,
       icon: Timer,
-      color: "text-warning",
-      iconBg: "bg-warning/10 text-warning",
+      hierarchy: "tertiary",
     },
   ];
 
-  const getTrendIcon = (change) => {
-    if (change > 0) return <TrendingUp className="h-3 w-3" />;
-    if (change < 0) return <TrendingDown className="h-3 w-3" />;
-    return <Minus className="h-3 w-3" />;
-  };
-
-  const getTrendColor = (change) => {
-    if (change > 0) return "text-success";
-    if (change < 0) return "text-error";
-    return "text-muted-foreground";
+  const getCardStyle = (hierarchy) => {
+    switch (hierarchy) {
+      case "primary":
+        return {
+          container: "bg-foreground text-background border-foreground shadow-md ring-1 ring-foreground/20",
+          label: "text-background/80 font-medium",
+          value: "text-background",
+          icon: "text-background/80",
+          changePos: "text-background/90",
+          changeNeg: "text-background/70",
+        };
+      case "tertiary":
+        return {
+          container: "bg-muted/30 text-muted-foreground border-border/40 shadow-none",
+          label: "text-muted-foreground/70",
+          value: "text-muted-foreground",
+          icon: "text-muted-foreground/50",
+          changePos: "text-muted-foreground",
+          changeNeg: "text-muted-foreground/60",
+        };
+      case "secondary":
+      default:
+        return {
+          container: "bg-card text-foreground border-border shadow-sm",
+          label: "text-muted-foreground font-medium",
+          value: "text-foreground",
+          icon: "text-muted-foreground",
+          changePos: "text-primary",
+          changeNeg: "text-muted-foreground",
+        };
+    }
   };
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       {cards.map((card, index) => {
         const Icon = card.icon;
+        const isPositive = card.change > 0;
+        const TrendIcon = isPositive ? ArrowUpRight : ArrowDownRight;
+        const style = getCardStyle(card.hierarchy);
+
         return (
           <div
             key={card.label}
-            className="stat-card group"
+            className={`rounded-lg border p-6 transition-all hover:shadow-md ${style.container}`}
             style={{
-              animationDelay: `${index * 100}ms`,
-              animation: "fade-up 0.6s ease forwards",
+              animationDelay: `${index * 80}ms`,
+              animation: "fade-up 0.5s ease forwards",
               opacity: 0,
             }}
           >
-            <div className="flex items-start justify-between mb-3">
-              <div
-                className={`w-10 h-10 rounded-lg flex items-center justify-center ${card.iconBg}`}
-              >
-                <Icon className="h-5 w-5" />
-              </div>
-              {card.change !== 0 && (
-                <div
-                  className={`flex items-center gap-1 text-xs font-medium ${getTrendColor(
-                    card.change
-                  )}`}
-                >
-                  {getTrendIcon(card.change)}
-                  <span>{Math.abs(card.change)}%</span>
-                </div>
-              )}
+            <div className="flex items-center justify-between mb-4">
+              <span className={`text-sm ${style.label}`}>
+                {card.label}
+              </span>
+              <Icon className={`h-4 w-4 ${style.icon}`} />
             </div>
-            <div>
-              <p className="text-sm text-muted-foreground mb-1">{card.label}</p>
-              <p className={`text-2xl font-bold ${card.color}`}>
+
+            <div className="flex items-baseline gap-2">
+              <div className={`text-3xl font-medium tracking-tight ${style.value}`}>
                 {typeof card.value === "string" && card.value.includes("m") ? (
                   card.value
                 ) : (
                   <AnimatedNumber value={card.value} />
                 )}
-              </p>
+              </div>
+              {card.change !== 0 && (
+                <span className={`flex items-center text-xs font-medium ${isPositive ? style.changePos : style.changeNeg}`}>
+                  <TrendIcon className="h-3 w-3 mr-0.5" />
+                  {Math.abs(card.change)}%
+                </span>
+              )}
             </div>
           </div>
         );

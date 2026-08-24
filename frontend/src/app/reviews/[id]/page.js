@@ -139,14 +139,14 @@ export default function ReviewPage() {
             />
             <InsightStat
               label="Complexity"
-              value={insights.complexity_score ?? "—"}
+              value={insights.complexity_score ?? "-"}
             />
             <InsightStat
               label="Impact"
               value={
                 insights.change_impact?.summary ||
                 insights.change_impact?.level ||
-                "—"
+                "-"
               }
             />
           </div>

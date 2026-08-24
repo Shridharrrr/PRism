@@ -15,7 +15,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata = {
-  title: "PRism — AI-Powered Code Reviews",
+  title: "PRism - AI-Powered Code Reviews",
   description:
     "PRism analyzes your GitHub pull requests with specialized AI agents, catching security vulnerabilities and code quality issues before they ship.",
 };

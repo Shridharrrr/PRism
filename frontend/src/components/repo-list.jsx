@@ -223,8 +223,8 @@ export function RepoList({ accessToken, userId }) {
                       onClick={() => toggleWebhook(repo)}
                       title={
                         isWebhookOn
-                          ? "Auto-trigger ON — click to disable"
-                          : "Auto-trigger OFF — click to enable"
+                          ? "Auto-trigger ON - click to disable"
+                          : "Auto-trigger OFF - click to enable"
                       }
                       className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
                         isWebhookOn

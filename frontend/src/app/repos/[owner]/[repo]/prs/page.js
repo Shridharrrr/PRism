@@ -41,7 +41,7 @@ export default async function PRsPage({ params }) {
             </div>
           </div>
           <p className="text-muted-foreground text-sm ml-[52px]">
-            Open pull requests — click{" "}
+            Open pull requests - click{" "}
             <strong className="text-foreground">Analyze PR</strong> to run
             the AI review
           </p>
