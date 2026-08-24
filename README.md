@@ -4,10 +4,19 @@ PRism analyzes your GitHub pull requests with specialized AI agents, catching se
 
 ## Features
 
+### Core Review Capabilities
 - 🛡️ **Security Auditor** - Detects SQL injection, XSS, hardcoded secrets, auth bypasses
 - 👁️ **Quality Inspector** - Identifies code smells, anti-patterns, missing error handling
 - ⚡ **Instant Analysis** - Get detailed AI review results in seconds
 - 🔔 **Auto-Trigger** - Automatically analyze every new PR via webhooks
+
+### CodeRabbit-like Features (New!)
+- 💬 **Unified PR Reviews** - Creates comprehensive GitHub reviews with approve/request changes status
+- 🤖 **Interactive AI Responses** - AI responds when developers ask questions on review comments
+- 📝 **Conversational Comments** - Detailed explanations with code suggestions in markdown
+- ⚙️ **Customizable Reviews** - Configure tone, thresholds, and ignore patterns via `.prism.yaml`
+- ✅ **Auto-Approve** - Automatically approves clean PRs with no critical issues
+- 🎯 **Smart Filtering** - Focus on specific areas: security, performance, best practices
 
 ## Tech Stack
 
@@ -221,6 +230,121 @@ If Celery can't connect to Redis:
 2. Verify Redis is running and accessible
 3. Ensure `.env` file has correct `REDIS_URL`
 4. On Windows, make sure you're using `--pool=solo`
+
+## GitHub App Setup for CodeRabbit-like Features
+
+### Required Permissions
+
+Your GitHub App needs these permissions:
+
+**Repository Permissions:**
+- Pull requests: **Read & Write** (for creating reviews)
+- Contents: **Read** (for fetching code)
+- Checks: **Read & Write** (for status checks)
+- Issues: **Read & Write** (for comment replies)
+
+**Subscribe to these events:**
+- `pull_request` (already configured)
+- `pull_request_review` (new)
+- `pull_request_review_comment` (new - for inline comments)
+- `issue_comment` (new - for PR comments)
+
+### Webhook Configuration
+
+Add these webhook URLs in your GitHub App settings:
+
+- **PR Events:** `https://your-domain.com/api/webhooks/github`
+- **Comment Events:** `https://your-domain.com/api/webhooks/github/comments`
+
+## Configuration with .prism.yaml
+
+Create a `.prism.yaml` file in your repository root to customize reviews:
+
+```yaml
+review:
+  auto_approve_if_no_critical: true
+  comment_on_every_file: false
+  critical_threshold: 1
+  tone: "professional"  # professional, friendly, concise
+  include_code_suggestions: true
+  include_explanations: true
+  enable_interactive_responses: true
+  response_wait_time: 2
+
+ignore_patterns:
+  - "*.test.js"
+  - "*.spec.ts"
+  - "**/__tests__/**"
+
+focus_areas:
+  - security
+  - performance
+  - best_practices
+```
+
+See `.prism.yaml.example` for a complete configuration template.
+
+## Database Migration
+
+Run the migration to add CodeRabbit-like features:
+
+```sql
+-- In your Supabase SQL editor, run:
+-- backend/migrations/001_coderabbit_features.sql
+```
+
+This adds tables for:
+- `github_reviews` - GitHub PR review metadata
+- `review_comments` - Individual comments posted on PRs
+- `comment_threads` - Conversation threads including bot responses
+
+## Environment Variables (New)
+
+Add these to your `backend/.env`:
+
+```bash
+# PRism Bot Configuration
+PRISM_BOT_NAME=prism[bot]
+PRISM_RESPONSE_DELAY=2
+PRISM_MAX_COMMENT_LENGTH=65000
+PRISM_ENABLE_AUTO_APPROVE=true
+PRISM_INTERACTIVE_RESPONSES=true
+```
+
+## How It Works
+
+### 1. Automatic PR Review
+When a PR is opened/updated:
+1. PRism fetches the PR diff
+2. AI agents analyze the code
+3. Issues are parsed and categorized
+4. A unified GitHub review is created with:
+   - Conversational comments on specific lines
+   - Overall assessment (Approve/Request Changes/Comment)
+   - Summary with statistics and key findings
+
+### 2. Interactive Responses
+When a developer replies to a PRism comment:
+1. Webhook detects the reply
+2. AI generates a contextual response
+3. Response is posted as a comment reply
+4. Conversation continues until issue is resolved
+
+### 3. Review States
+- **APPROVE**: No issues found (if auto-approve enabled)
+- **REQUEST_CHANGES**: Critical issues detected
+- **COMMENT**: Warnings/suggestions found
+
+## API Endpoints (New)
+
+```
+GET    /api/reviews/{id}/github-review     # Get GitHub review details
+GET    /api/reviews/{id}/comments          # Get comment threads
+POST   /api/reviews/{id}/dismiss           # Dismiss GitHub review
+GET    /api/repos/{id}/config              # Get .prism.yaml config
+PUT    /api/repos/{id}/config              # Validate config
+POST   /api/webhooks/github/comments       # Handle comment events
+```
 
 ## License
 

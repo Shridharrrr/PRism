@@ -1,0 +1,69 @@
+# .prism.yaml Configuration Example
+# Place this file in the root of your repository to customize PRism AI code reviews
+
+# Review behavior configuration
+review:
+  # Automatically approve PRs with no critical issues
+  auto_approve_if_no_critical: true
+
+  # Comment on every file (true) or only files with issues (false)
+  comment_on_every_file: false
+
+  # Number of critical issues needed to request changes (default: 1)
+  critical_threshold: 1
+
+  # Comment tone: "professional", "friendly", or "concise"
+  tone: "professional"
+
+  # Include code suggestions in comments
+  include_code_suggestions: true
+
+  # Include explanations for why issues matter
+  include_explanations: true
+
+  # Enable AI to respond to developer questions on comments
+  enable_interactive_responses: true
+
+  # Seconds to wait before AI responds to questions (default: 2)
+  response_wait_time: 2
+
+# File patterns to ignore during review
+# Uses glob patterns (*, **, ?)
+ignore_patterns:
+  - "*.test.js"
+  - "*.test.ts"
+  - "*.spec.js"
+  - "*.spec.ts"
+  - "**/__tests__/**"
+  - "**/__mocks__/**"
+  - "**/test/**"
+  - "**/tests/**"
+  - "**/node_modules/**"
+  - "**/dist/**"
+  - "**/build/**"
+  - "*.min.js"
+  - "*.min.css"
+  - "package-lock.json"
+  - "yarn.lock"
+
+# Focus areas for review
+# Only issues in these areas will be reported
+# Remove this section to review everything
+# Options: security, performance, best_practices, error_handling
+focus_areas:
+  - security
+  - performance
+  - best_practices
+  - error_handling
+
+# Advanced: Custom review rules (coming soon)
+# custom_rules:
+#   - name: "enforce-logger"
+#     pattern: "console\\.log"
+#     severity: "warning"
+#     message: "Use logger instead of console.log"
+#
+#   - name: "no-todo-comments"
+#     pattern: "TODO:|FIXME:"
+#     severity: "info"
+#     message: "Remove TODO comments before merging"

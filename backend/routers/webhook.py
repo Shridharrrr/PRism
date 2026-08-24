@@ -109,3 +109,171 @@ async def github_webhook(request: Request):
     )
 
     return {"status": "queued", "review_id": review_id}
+
+
+@router.post("/webhooks/github/comments")
+async def github_comment_webhook(request: Request):
+    """
+    Handle comment events on PRs for interactive AI responses.
+    Supports: pull_request_review_comment, issue_comment
+    """
+    payload_bytes = await request.body()
+    signature = request.headers.get("x-hub-signature-256", "")
+
+    if not verify_signature(payload_bytes, signature):
+        raise HTTPException(status_code=401, detail="Invalid signature")
+
+    event = request.headers.get("x-github-event")
+    payload = json.loads(payload_bytes)
+
+    # Get bot name from env (default: prism[bot])
+    bot_name = os.getenv("PRISM_BOT_NAME", "prism[bot]")
+
+    # Handle pull_request_review_comment (inline comments)
+    if event == "pull_request_review_comment":
+        action = payload.get("action")
+        if action != "created":
+            return {"status": "ignored", "reason": f"action '{action}' not tracked"}
+
+        comment = payload.get("comment", {})
+        pr = payload.get("pull_request", {})
+        repo_full_name = payload["repository"]["full_name"]
+
+        # Check if this is a reply to PRism's comment
+        in_reply_to_id = comment.get("in_reply_to_id")
+        if not in_reply_to_id:
+            return {"status": "ignored", "reason": "not a reply to existing comment"}
+
+        # Check if comment author is not the bot itself
+        comment_author = comment.get("user", {}).get("login", "")
+        if comment_author.lower() == bot_name.lower():
+            return {"status": "ignored", "reason": "ignoring bot's own comment"}
+
+        # Check if interactive responses are enabled
+        enable_interactive = os.getenv("PRISM_INTERACTIVE_RESPONSES", "true").lower() == "true"
+        if not enable_interactive:
+            return {"status": "ignored", "reason": "interactive responses disabled"}
+
+        # Extract details
+        pr_number = pr.get("number")
+        comment_id = comment.get("id")
+        user_login = comment_author
+        user_question = comment.get("body", "")
+        installation_id = payload["installation"]["id"]
+
+        # Try to find the review_id from the repo and PR number
+        review_id = None
+        try:
+            repo_result = supabase.table("repos").select("id").eq(
+                "full_name", repo_full_name
+            ).execute()
+
+            if repo_result.data:
+                repo_id = repo_result.data[0]["id"]
+                review_result = supabase.table("reviews").select("id").eq(
+                    "repo_id", repo_id
+                ).eq("pr_number", pr_number).order("created_at", desc=True).limit(1).execute()
+
+                if review_result.data:
+                    review_id = review_result.data[0]["id"]
+        except Exception as e:
+            print(f"Could not find review_id: {e}")
+
+        # Queue AI response task
+        from tasks import respond_to_comment_task
+
+        # Add delay if configured
+        response_delay = int(os.getenv("PRISM_RESPONSE_DELAY", "2"))
+        respond_to_comment_task.apply_async(
+            kwargs={
+                "repo_full_name": repo_full_name,
+                "pr_number": pr_number,
+                "comment_id": comment_id,
+                "user_login": user_login,
+                "user_question": user_question,
+                "installation_id": installation_id,
+                "review_id": review_id
+            },
+            countdown=response_delay
+        )
+
+        return {"status": "queued", "comment_id": comment_id}
+
+    # Handle issue_comment (general PR comments)
+    elif event == "issue_comment":
+        action = payload.get("action")
+        if action != "created":
+            return {"status": "ignored", "reason": f"action '{action}' not tracked"}
+
+        issue = payload.get("issue", {})
+
+        # Only handle if it's on a PR (issues have pull_request field when they're PRs)
+        if "pull_request" not in issue:
+            return {"status": "ignored", "reason": "not a PR comment"}
+
+        comment = payload.get("comment", {})
+        comment_author = comment.get("user", {}).get("login", "")
+
+        # Ignore bot's own comments
+        if comment_author.lower() == bot_name.lower():
+            return {"status": "ignored", "reason": "ignoring bot's own comment"}
+
+        # Check if comment mentions the bot or is asking a question
+        comment_body = comment.get("body", "").lower()
+        is_question = any(word in comment_body for word in ["@prism", "why", "how", "what", "can you", "could you", "?"])
+
+        if not is_question:
+            return {"status": "ignored", "reason": "not a question or mention"}
+
+        # Check if interactive responses are enabled
+        enable_interactive = os.getenv("PRISM_INTERACTIVE_RESPONSES", "true").lower() == "true"
+        if not enable_interactive:
+            return {"status": "ignored", "reason": "interactive responses disabled"}
+
+        # Extract details
+        repo_full_name = payload["repository"]["full_name"]
+        pr_number = issue.get("number")
+        comment_id = comment.get("id")
+        user_login = comment_author
+        user_question = comment.get("body", "")
+        installation_id = payload["installation"]["id"]
+
+        # Find review_id
+        review_id = None
+        try:
+            repo_result = supabase.table("repos").select("id").eq(
+                "full_name", repo_full_name
+            ).execute()
+
+            if repo_result.data:
+                repo_id = repo_result.data[0]["id"]
+                review_result = supabase.table("reviews").select("id").eq(
+                    "repo_id", repo_id
+                ).eq("pr_number", pr_number).order("created_at", desc=True).limit(1).execute()
+
+                if review_result.data:
+                    review_id = review_result.data[0]["id"]
+        except Exception as e:
+            print(f"Could not find review_id: {e}")
+
+        # Queue AI response task
+        from tasks import respond_to_comment_task
+
+        response_delay = int(os.getenv("PRISM_RESPONSE_DELAY", "2"))
+        respond_to_comment_task.apply_async(
+            kwargs={
+                "repo_full_name": repo_full_name,
+                "pr_number": pr_number,
+                "comment_id": comment_id,
+                "user_login": user_login,
+                "user_question": user_question,
+                "installation_id": installation_id,
+                "review_id": review_id
+            },
+            countdown=response_delay
+        )
+
+        return {"status": "queued", "comment_id": comment_id}
+
+    else:
+        return {"status": "ignored", "reason": f"event '{event}' not supported"}

@@ -124,3 +124,128 @@ async def fetch_repo_file(owner: str, repo: str, path: str, ref: str, token: str
             print(f"Failed to fetch file: {response.text}")
             return None
         return response.text
+
+async def create_pr_review(
+    owner: str,
+    repo: str,
+    pr_number: int,
+    commit_id: str,
+    body: str,
+    event: str,  # "APPROVE", "REQUEST_CHANGES", "COMMENT"
+    comments: list,  # [{"path": str, "line": int, "body": str}]
+    token: str
+) -> dict:
+    """
+    Create a unified PR review with multiple comments and a review state.
+    This is the CodeRabbit-style review API.
+    """
+    url = f"https://api.github.com/repos/{owner}/{repo}/pulls/{pr_number}/reviews"
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28"
+    }
+
+    # Format comments for GitHub API
+    review_comments = []
+    for comment in comments:
+        review_comment = {
+            "path": comment["path"],
+            "body": comment["body"],
+            "line": comment["line"],
+        }
+        # Only add side if it's explicitly set (defaults to RIGHT)
+        if "side" in comment:
+            review_comment["side"] = comment["side"]
+        review_comments.append(review_comment)
+
+    data = {
+        "commit_id": commit_id,
+        "body": body,
+        "event": event,
+        "comments": review_comments
+    }
+
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        response = await client.post(url, headers=headers, json=data)
+        if response.status_code >= 400:
+            print(f"Failed to create PR review: {response.status_code} - {response.text}")
+            return {}
+        return response.json()
+
+async def reply_to_review_comment(
+    owner: str,
+    repo: str,
+    pr_number: int,
+    comment_id: int,
+    reply_body: str,
+    token: str
+) -> dict:
+    """
+    Reply to a specific review comment in a PR.
+    Used for interactive AI responses to developer questions.
+    """
+    url = f"https://api.github.com/repos/{owner}/{repo}/pulls/{pr_number}/comments/{comment_id}/replies"
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28"
+    }
+    data = {"body": reply_body}
+
+    async with httpx.AsyncClient() as client:
+        response = await client.post(url, headers=headers, json=data)
+        if response.status_code >= 400:
+            print(f"Failed to reply to comment: {response.status_code} - {response.text}")
+            return {}
+        return response.json()
+
+async def fetch_pr_review_comments(
+    owner: str,
+    repo: str,
+    pr_number: int,
+    token: str
+) -> list:
+    """
+    Fetch all review comments for a PR.
+    Used to track conversation threads.
+    """
+    url = f"https://api.github.com/repos/{owner}/{repo}/pulls/{pr_number}/comments"
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28"
+    }
+
+    async with httpx.AsyncClient() as client:
+        response = await client.get(url, headers=headers)
+        if response.status_code >= 400:
+            print(f"Failed to fetch review comments: {response.text}")
+            return []
+        return response.json()
+
+async def dismiss_pr_review(
+    owner: str,
+    repo: str,
+    pr_number: int,
+    review_id: int,
+    message: str,
+    token: str
+) -> dict:
+    """
+    Dismiss a PR review.
+    """
+    url = f"https://api.github.com/repos/{owner}/{repo}/pulls/{pr_number}/reviews/{review_id}/dismissals"
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28"
+    }
+    data = {"message": message}
+
+    async with httpx.AsyncClient() as client:
+        response = await client.put(url, headers=headers, json=data)
+        if response.status_code >= 400:
+            print(f"Failed to dismiss review: {response.text}")
+            return {}
+        return response.json()

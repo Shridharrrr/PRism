@@ -148,18 +148,18 @@ async def analyze_pr(req: AnalyzeRequest):
 async def get_dashboard_stats():
     reviews_res = supabase.table("reviews").select("*").execute()
     flags_res = supabase.table("flags").select("*").execute()
-    
+
     reviews = reviews_res.data or []
     flags = flags_res.data or []
-    
+
     from datetime import datetime, timedelta, timezone
     now = datetime.now(timezone.utc)
-    
+
     trends = []
     for i in range(14, -1, -1):
         date = (now - timedelta(days=i)).strftime("%Y-%m-%d")
         trends.append({"date": date, "bugs": 0})
-        
+
     for flag in flags:
         created_at_str = flag.get("created_at")
         if created_at_str:
@@ -172,14 +172,14 @@ async def get_dashboard_stats():
                         break
             except:
                 pass
-                
+
     vuln_counts = {}
     for flag in flags:
         t = flag.get("type", "issue")
         vuln_counts[t] = vuln_counts.get(t, 0) + 1
-        
+
     vuln_pie = [{"name": k, "value": v} for k, v in vuln_counts.items()]
-    
+
     author_scores = {}
     review_map = {r["id"]: r for r in reviews}
     for flag in flags:
@@ -191,21 +191,256 @@ async def get_dashboard_stats():
             author_scores[author]["issues_found"] += 1
             if flag.get("user_decision") == "safe":
                 author_scores[author]["issues_fixed"] += 1
-                
+
     for r in reviews:
         author = r["pr_author"]
         if author not in author_scores:
             author_scores[author] = {"clean_prs": 0, "issues_found": 0, "issues_fixed": 0}
-        
+
         pr_flags = [f for f in flags if f["review_id"] == r["id"]]
         if len(pr_flags) == 0:
             author_scores[author]["clean_prs"] += 1
-            
+
     leaderboard = [{"author": k, **v} for k, v in author_scores.items()]
     leaderboard.sort(key=lambda x: x["issues_fixed"], reverse=True)
-    
+
     return {
         "trends": trends,
         "vulnerabilities": vuln_pie,
         "leaderboard": leaderboard
     }
+
+
+@router.get("/reviews/{review_id}/github-review")
+async def get_github_review_details(review_id: str):
+    """
+    Get GitHub review details including review ID, state, and comment threads.
+    """
+    try:
+        review = supabase.table("reviews").select(
+            "github_review_id, github_review_state, repo_id, pr_number, installation_id"
+        ).eq("id", review_id).single().execute()
+
+        if not review.data:
+            raise HTTPException(404, "Review not found")
+
+        review_data = review.data
+        github_review_id = review_data.get("github_review_id")
+        review_state = review_data.get("github_review_state")
+
+        # Get repo details for GitHub API calls
+        repo_result = supabase.table("repos").select("full_name").eq(
+            "id", review_data["repo_id"]
+        ).single().execute()
+
+        if not repo_result.data:
+            raise HTTPException(404, "Repository not found")
+
+        repo_full_name = repo_result.data["full_name"]
+        owner, repo = repo_full_name.split("/")
+
+        # Get installation token and fetch comments
+        comments = []
+        if github_review_id and review_data.get("installation_id"):
+            from tools.github_app import get_installation_token
+            from tools.github_tools import fetch_pr_review_comments
+
+            token = get_installation_token(review_data["installation_id"])
+            comments = await fetch_pr_review_comments(
+                owner, repo, review_data["pr_number"], token
+            )
+
+        return {
+            "review_id": review_id,
+            "github_review_id": github_review_id,
+            "review_state": review_state,
+            "repo_full_name": repo_full_name,
+            "pr_number": review_data["pr_number"],
+            "comments": comments
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/reviews/{review_id}/comments")
+async def get_review_comments(review_id: str):
+    """
+    Get all review comments for a specific review with thread status.
+    """
+    try:
+        # Get flags associated with this review
+        flags = supabase.table("flags").select("*").eq("review_id", review_id).execute()
+
+        # Get review details
+        review = supabase.table("reviews").select(
+            "repo_id, pr_number, installation_id"
+        ).eq("id", review_id).single().execute()
+
+        if not review.data:
+            raise HTTPException(404, "Review not found")
+
+        # Get repo details
+        repo_result = supabase.table("repos").select("full_name").eq(
+            "id", review.data["repo_id"]
+        ).single().execute()
+
+        if not repo_result.data:
+            raise HTTPException(404, "Repository not found")
+
+        repo_full_name = repo_result.data["full_name"]
+        owner, repo = repo_full_name.split("/")
+
+        # Fetch GitHub comments
+        comments = []
+        if review.data.get("installation_id"):
+            from tools.github_app import get_installation_token
+            from tools.github_tools import fetch_pr_review_comments
+
+            token = get_installation_token(review.data["installation_id"])
+            github_comments = await fetch_pr_review_comments(
+                owner, repo, review.data["pr_number"], token
+            )
+
+            # Match flags with GitHub comments
+            for comment in github_comments:
+                comment_data = {
+                    "id": comment.get("id"),
+                    "path": comment.get("path"),
+                    "line": comment.get("line"),
+                    "body": comment.get("body"),
+                    "user": comment.get("user", {}).get("login"),
+                    "created_at": comment.get("created_at"),
+                    "in_reply_to_id": comment.get("in_reply_to_id"),
+                }
+                comments.append(comment_data)
+
+        return {
+            "review_id": review_id,
+            "flags": flags.data or [],
+            "comments": comments
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/reviews/{review_id}/dismiss")
+async def dismiss_review(review_id: str, message: str = "Review dismissed"):
+    """
+    Dismiss a GitHub PR review.
+    """
+    try:
+        review = supabase.table("reviews").select(
+            "github_review_id, repo_id, pr_number, installation_id"
+        ).eq("id", review_id).single().execute()
+
+        if not review.data:
+            raise HTTPException(404, "Review not found")
+
+        review_data = review.data
+        github_review_id = review_data.get("github_review_id")
+
+        if not github_review_id:
+            raise HTTPException(400, "No GitHub review to dismiss")
+
+        # Get repo details
+        repo_result = supabase.table("repos").select("full_name").eq(
+            "id", review_data["repo_id"]
+        ).single().execute()
+
+        if not repo_result.data:
+            raise HTTPException(404, "Repository not found")
+
+        repo_full_name = repo_result.data["full_name"]
+        owner, repo = repo_full_name.split("/")
+
+        # Dismiss the review
+        from tools.github_app import get_installation_token
+        from tools.github_tools import dismiss_pr_review
+
+        token = get_installation_token(review_data["installation_id"])
+        result = await dismiss_pr_review(
+            owner, repo, review_data["pr_number"],
+            github_review_id, message, token
+        )
+
+        return {"status": "dismissed", "result": result}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/repos/{repo_id}/config")
+async def get_repo_config(repo_id: str):
+    """
+    Get .prism.yaml configuration for a repository.
+    """
+    try:
+        repo = supabase.table("repos").select(
+            "full_name, installation_id"
+        ).eq("id", repo_id).single().execute()
+
+        if not repo.data:
+            raise HTTPException(404, "Repository not found")
+
+        repo_data = repo.data
+        owner, repo_name = repo_data["full_name"].split("/")
+
+        # Fetch .prism.yaml from default branch
+        from tools.github_app import get_installation_token
+        from tools.github_tools import fetch_repo_file
+
+        token = get_installation_token(repo_data["installation_id"])
+
+        # Try to fetch from main/master
+        config_content = None
+        for branch in ["main", "master"]:
+            config_content = await fetch_repo_file(
+                owner, repo_name, ".prism.yaml", branch, token
+            )
+            if config_content:
+                break
+
+        if not config_content:
+            # Return default config
+            from tools.config_parser import DEFAULT_CONFIG
+            return {"config": None, "defaults": DEFAULT_CONFIG}
+
+        from tools.config_parser import parse_prism_config
+        parsed_config = parse_prism_config(config_content)
+
+        return {
+            "config": config_content,
+            "parsed": parsed_config
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+class UpdateConfigRequest(BaseModel):
+    config_yaml: str
+
+
+@router.put("/repos/{repo_id}/config")
+async def update_repo_config(repo_id: str, req: UpdateConfigRequest):
+    """
+    Update .prism.yaml configuration (stores locally, user must commit to repo).
+    Note: This endpoint can be expanded to create PR with config changes.
+    """
+    try:
+        # Validate the YAML
+        from tools.config_parser import parse_prism_config
+        parsed = parse_prism_config(req.config_yaml)
+
+        # For now, just return validation result
+        # In production, could create a PR with the config change
+        return {
+            "status": "validated",
+            "parsed": parsed,
+            "message": "Config is valid. Commit .prism.yaml to your repository to apply."
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Invalid config: {str(e)}")
