@@ -4,7 +4,7 @@ load_dotenv()
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from supabase import create_client
-from routers import reviews, flags, webhook
+from routers import reviews, flags, webhook, insights
 import os
 
 app = FastAPI(title="PRism API", redirect_slashes=False)
@@ -25,6 +25,7 @@ supabase = create_client(
 app.include_router(reviews.router)
 app.include_router(flags.router)
 app.include_router(webhook.router)
+app.include_router(insights.router)
 
 
 @app.get("/health")

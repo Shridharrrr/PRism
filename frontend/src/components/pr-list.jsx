@@ -35,7 +35,7 @@ export function PRList({ owner, repo, repoId, accessToken, userId }) {
       setLoading(false);
     }
     load();
-  }, []);
+  }, [accessToken, owner, repo]);
 
   const analyze = async (pr) => {
     setAnalyzing((prev) => ({ ...prev, [pr.number]: true }));

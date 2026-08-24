@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import {
   GitFork,
+  GitPullRequest,
   Lock,
   Globe,
   ChevronRight,
@@ -23,7 +24,7 @@ export function RepoList({ accessToken, userId }) {
   const [connecting, setConnecting] = useState(new Set());
   const [error, setError] = useState(null);
   const [search, setSearch] = useState("");
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
   const router = useRouter();
 
   useEffect(() => {
@@ -56,7 +57,7 @@ export function RepoList({ accessToken, userId }) {
       setLoading(false);
     }
     load();
-  }, []);
+  }, [accessToken, supabase, userId]);
 
   const connect = async (repo) => {
     setConnecting((prev) => new Set(prev).add(repo.id));

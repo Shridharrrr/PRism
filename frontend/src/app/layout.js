@@ -1,5 +1,6 @@
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import { ThemeProvider } from "@/components/layout/theme-provider";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -24,8 +25,13 @@ export default function RootLayout({ children }) {
     <html
       lang="en"
       className={`${inter.variable} ${jetbrainsMono.variable} h-full antialiased font-sans`}
+      suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col bg-background">{children}</body>
+      <body className="min-h-full flex flex-col bg-background">
+        <ThemeProvider>
+          {children}
+        </ThemeProvider>
+      </body>
     </html>
   );
 }

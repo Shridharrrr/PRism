@@ -14,6 +14,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import Link from "next/link";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 export default async function LandingPage() {
   const supabase = await createClient();
@@ -21,36 +22,38 @@ export default async function LandingPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (user) redirect("/repos");
+  if (user) redirect("/dashboard");
 
   return (
     <div className="min-h-screen bg-background flex flex-col overflow-x-hidden">
       {/* ── Navbar ─────────────────────────────────────── */}
       <header className="fixed top-0 inset-x-0 z-50 border-b border-border bg-background/80 backdrop-blur-xl">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2">
+          <Link href="/" className="flex items-center gap-2" aria-label="PRism home">
             <div className="w-8 h-8 rounded-lg bg-foreground flex items-center justify-center">
               <div className="w-4 h-4 rounded bg-background" />
             </div>
             <span className="font-semibold text-lg tracking-tight text-foreground">
               PRism
             </span>
-          </div>
-          <LoginButton variant="outline" size="sm" />
+          </Link>
+          <nav className="flex items-center gap-2" aria-label="Primary navigation">
+            <Link
+              href="/features"
+              className="hidden sm:inline-flex px-3 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Features
+            </Link>
+            <ThemeToggle />
+            <LoginButton variant="outline" size="sm" />
+          </nav>
         </div>
       </header>
 
       {/* ── Hero ───────────────────────────────────────── */}
       <section className="relative flex items-center justify-center min-h-screen pt-16">
-        {/* Subtle background gradient */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div
-            className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full"
-            style={{
-              background:
-                "radial-gradient(ellipse 60% 50% at 50% 0%, oklch(0.96 0 0), transparent 70%)",
-            }}
-          />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-2/3 bg-[radial-gradient(ellipse_at_top,var(--color-muted),transparent_70%)] opacity-60" />
         </div>
 
         {/* Grid pattern */}
@@ -245,6 +248,14 @@ export default async function LandingPage() {
                 </p>
               </div>
             ))}
+          </div>
+          <div className="mt-8 flex justify-center">
+            <Link
+              href="/features"
+              className="inline-flex items-center gap-2 text-sm font-medium text-foreground hover:text-foreground/70 transition-colors"
+            >
+              Explore every capability <ArrowRight className="w-4 h-4" />
+            </Link>
           </div>
         </div>
       </section>

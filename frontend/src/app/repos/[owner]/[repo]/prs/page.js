@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { PRList } from "@/components/pr-list";
-import { Navbar } from "@/components/navbar";
+import { AuthenticatedLayout } from "@/components/layout/authenticated-layout";
 import { GitPullRequest } from "lucide-react";
 
 export default async function PRsPage({ params }) {
@@ -27,16 +27,8 @@ export default async function PRsPage({ params }) {
     .single();
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <Navbar
-        username={profile?.github_username}
-        avatarUrl={profile?.github_avatar_url}
-        backHref="/repos"
-        backLabel="Repositories"
-      />
-
-      <main className="flex-1 max-w-5xl mx-auto w-full px-6 py-10">
-        {/* Page header */}
+    <AuthenticatedLayout>
+      <div className="flex-1 max-w-5xl mx-auto w-full px-6 py-8">
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
             <div className="w-10 h-10 rounded-lg bg-muted border border-border flex items-center justify-center">
@@ -62,7 +54,7 @@ export default async function PRsPage({ params }) {
           accessToken={profile?.github_access_token ?? ""}
           userId={user.id}
         />
-      </main>
-    </div>
+      </div>
+    </AuthenticatedLayout>
   );
 }

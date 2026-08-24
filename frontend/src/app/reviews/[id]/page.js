@@ -5,17 +5,18 @@ import { createClient } from "@/lib/supabase/client";
 import { ReviewHeader } from "@/components/review-header";
 import { FlagGroup } from "@/components/flag-group";
 import { AnalysisGraph } from "@/components/analysis-graph";
-import { useParams, useRouter } from "next/navigation";
+import { AuthenticatedLayout } from "@/components/layout/authenticated-layout";
+import { useParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import { ChatWidget } from "@/components/chat-widget";
 
 export default function ReviewPage() {
   const { id } = useParams();
-  const router = useRouter();
   const [review, setReview] = useState(null);
   const [flags, setFlags] = useState([]);
   const [finalReport, setFinalReport] = useState(null);
+  const [insights, setInsights] = useState(null);
   const [loading, setLoading] = useState(true);
   const supabase = useMemo(() => createClient(), []);
 
@@ -32,6 +33,18 @@ export default function ReviewPage() {
       );
       setFinalReport(report?.raw_output ?? null);
       setLoading(false);
+
+      try {
+        const insightsRes = await fetch(
+          `http://localhost:8000/api/reviews/${id}/insights`,
+        );
+        if (insightsRes.ok) {
+          const insightsData = await insightsRes.json();
+          if (!cancelled) setInsights(insightsData.insights);
+        }
+      } catch {
+        // Insights are optional until the SaaS tables exist.
+      }
     }
     fetchReview();
     return () => {
@@ -70,105 +83,43 @@ export default function ReviewPage() {
     return () => supabase.removeChannel(channel);
   }, [id, supabase]);
 
-  if (loading)
+  if (loading) {
     return (
-      <div className="min-h-screen bg-background flex flex-col">
-        {/* minimal nav */}
-        <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-xl">
-          <div className="max-w-5xl mx-auto px-6 h-16 flex items-center">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-foreground flex items-center justify-center">
-                <div className="w-4 h-4 rounded bg-background" />
-              </div>
-              <span
-                className="font-semibold text-lg tracking-tight text-foreground"
-              >
-                PRism
-              </span>
-            </div>
-          </div>
-        </header>
-        <main className="flex-1 max-w-5xl mx-auto w-full px-6 py-10">
-          <div className="flex flex-col items-center justify-center py-24 gap-4">
-            <div className="w-10 h-10 rounded-full border-2 border-primary border-t-transparent animate-spin" />
-            <p className="text-muted-foreground text-sm">Loading review...</p>
-          </div>
-        </main>
-      </div>
+      <AuthenticatedLayout>
+        <div className="flex-1 max-w-5xl mx-auto w-full px-6 py-16 text-center">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground mx-auto mb-3" />
+          <p className="text-muted-foreground text-sm">Loading review...</p>
+        </div>
+      </AuthenticatedLayout>
     );
+  }
 
-  if (!review)
+  if (!review) {
     return (
-      <div className="min-h-screen bg-background flex flex-col">
-        <header className="sticky top-0 z-40 border-b border-border/50 bg-background/90 backdrop-blur-xl">
-          <div className="max-w-5xl mx-auto px-6 h-14 flex items-center">
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-md bg-primary/20 border border-primary/30 flex items-center justify-center">
-                <div className="w-3 h-3 rounded-sm bg-primary" />
-              </div>
-              <span
-                className="font-semibold text-sm bg-clip-text text-transparent"
-                style={{
-                  backgroundImage:
-                    "linear-gradient(135deg, #a78bfa, #818cf8, #c4b5fd)",
-                }}
-              >
-                PRism
-              </span>
-            </div>
-          </div>
-        </header>
-        <main className="flex-1 max-w-5xl mx-auto w-full px-6 py-10">
-          <div className="text-center py-24">
-            <p className="text-destructive text-sm mb-4">Review not found.</p>
-            <Link
-              href="/repos"
-              className="text-sm text-primary hover:underline"
-            >
-              ← Back to repositories
-            </Link>
-          </div>
-        </main>
-      </div>
+      <AuthenticatedLayout>
+        <div className="flex-1 max-w-5xl mx-auto w-full px-6 py-16 text-center">
+          <p className="text-destructive text-sm mb-4">Review not found.</p>
+          <Link href="/reviews" className="text-sm text-primary hover:underline">
+            ← Back to reviews
+          </Link>
+        </div>
+      </AuthenticatedLayout>
     );
+  }
 
   const decidedCount = flags.filter((f) => f.user_decision !== null).length;
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      {/* Navbar */}
-      <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-xl">
-        <div className="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3 min-w-0">
-            <Link
-              href="/repos"
-              className="flex items-center gap-2 shrink-0 group"
-            >
-              <div className="w-8 h-8 rounded-lg bg-foreground flex items-center justify-center transition-colors group-hover:opacity-80">
-                <div className="w-4 h-4 rounded bg-background" />
-              </div>
-              <span
-                className="font-semibold text-lg tracking-tight text-foreground"
-              >
-                PRism
-              </span>
-            </Link>
-            <span className="text-border text-sm select-none">/</span>
-            <span className="text-sm text-muted-foreground truncate">
-              Review
-            </span>
-          </div>
-          <button
-            onClick={() => router.back()}
-            className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors shrink-0"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span className="hidden sm:inline">Back</span>
-          </button>
-        </div>
-      </header>
+    <AuthenticatedLayout>
+      <div className="flex-1 max-w-5xl mx-auto w-full px-6 py-8">
+        <Link
+          href="/reviews"
+          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          All reviews
+        </Link>
 
-      <main className="flex-1 max-w-5xl mx-auto w-full px-6 py-10">
         <ReviewHeader
           review={review}
           flagCount={flags.length}
@@ -176,22 +127,56 @@ export default function ReviewPage() {
           finalReport={finalReport}
         />
 
+        {insights && (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
+            <InsightStat
+              label="Risk score"
+              value={`${insights.risk_score ?? 0}/100`}
+            />
+            <InsightStat
+              label="Est. review time"
+              value={`${insights.estimated_review_time_minutes ?? 0}m`}
+            />
+            <InsightStat
+              label="Complexity"
+              value={insights.complexity_score ?? "—"}
+            />
+            <InsightStat
+              label="Impact"
+              value={
+                insights.change_impact?.summary ||
+                insights.change_impact?.level ||
+                "—"
+              }
+            />
+          </div>
+        )}
+
         {review.status === "analyzing" || review.status === "queued" ? (
           <div className="mb-10">
             <AnalysisGraph review={review} flags={flags} />
           </div>
         ) : review.status === "failed" ? (
-          <div className="rounded-lg border border-red-200 bg-red-50 p-6 text-center">
-            <p className="text-red-900 font-medium mb-1">Analysis failed</p>
-            <p className="text-sm text-red-700">
+          <div className="rounded-lg border border-error/30 bg-error/5 p-6 text-center">
+            <p className="text-foreground font-medium mb-1">Analysis failed</p>
+            <p className="text-sm text-muted-foreground">
               Something went wrong while analyzing this PR. Please try again.
             </p>
           </div>
         ) : (
           <FlagGroup flags={flags} />
         )}
-      </main>
+      </div>
       <ChatWidget reviewId={id} />
+    </AuthenticatedLayout>
+  );
+}
+
+function InsightStat({ label, value }) {
+  return (
+    <div className="rounded-lg border border-border bg-card p-4">
+      <p className="text-xs text-muted-foreground mb-1">{label}</p>
+      <p className="text-lg font-semibold truncate">{String(value)}</p>
     </div>
   );
 }

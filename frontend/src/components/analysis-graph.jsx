@@ -342,7 +342,7 @@ export function AnalysisGraph({ review, flags = [] }) {
 
     setNodes(newNodes);
     setEdges(newEdges);
-  }, [review, flags, setNodes, setEdges]);
+  }, [review, flags, qualFlags, secFlags, setNodes, setEdges]);
 
   return (
     <div className="w-full h-[60vh] min-h-[550px] rounded-2xl border border-border/60 bg-card/20 overflow-hidden relative shadow-lg shadow-primary/5">

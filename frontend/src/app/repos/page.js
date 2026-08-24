@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { RepoList } from "@/components/repo-list";
-import { Navbar } from "@/components/navbar";
+import { AuthenticatedLayout } from "@/components/layout/authenticated-layout";
 import { GitFork } from "lucide-react";
 
 export default async function ReposPage() {
@@ -19,14 +19,8 @@ export default async function ReposPage() {
     .single();
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <Navbar
-        username={profile?.github_username}
-        avatarUrl={profile?.github_avatar_url}
-      />
-
-      <main className="flex-1 max-w-5xl mx-auto w-full px-6 py-10">
-        {/* Page header */}
+    <AuthenticatedLayout>
+      <div className="flex-1 max-w-5xl mx-auto w-full px-6 py-8">
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
             <div className="w-10 h-10 rounded-lg bg-muted border border-border flex items-center justify-center">
@@ -41,19 +35,18 @@ export default async function ReposPage() {
           </p>
         </div>
 
-        {/* Tip banner */}
-        <div className="rounded-lg border border-blue-200 bg-blue-50 px-5 py-4 mb-8 flex items-start gap-3">
-          <div className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center shrink-0 mt-0.5">
-            <div className="w-2 h-2 rounded-full bg-blue-600" />
+        <div className="rounded-lg border border-info/30 bg-info/5 px-5 py-4 mb-8 flex items-start gap-3">
+          <div className="w-5 h-5 rounded-full bg-info/15 flex items-center justify-center shrink-0 mt-0.5">
+            <div className="w-2 h-2 rounded-full bg-info" />
           </div>
           <div className="text-sm">
-            <span className="font-medium text-blue-900">Quick start:</span>
-            <span className="text-blue-700 ml-1">
-              Click <strong className="text-blue-900">Connect</strong> on a
+            <span className="font-medium text-foreground">Quick start:</span>
+            <span className="text-muted-foreground ml-1">
+              Click <strong className="text-foreground">Connect</strong> on a
               repo to track it, then{" "}
-              <strong className="text-blue-900">View PRs</strong> to see
+              <strong className="text-foreground">View PRs</strong> to see
               open pull requests. Enable{" "}
-              <strong className="text-blue-900">Auto</strong> to trigger
+              <strong className="text-foreground">Auto</strong> to trigger
               analysis automatically on new PRs.
             </span>
           </div>
@@ -63,7 +56,7 @@ export default async function ReposPage() {
           accessToken={profile?.github_access_token ?? ""}
           userId={user.id}
         />
-      </main>
-    </div>
+      </div>
+    </AuthenticatedLayout>
   );
 }
