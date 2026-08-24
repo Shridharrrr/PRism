@@ -69,7 +69,7 @@ async def fix_flag(flag_id: str):
     # 5. Use LLM to apply the fix
     from langchain_google_genai import ChatGoogleGenerativeAI
     from langchain_core.messages import HumanMessage
-    llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0.1, google_api_key=os.getenv("GOOGLE_API_KEY"))
+    llm = ChatGoogleGenerativeAI(model="gemini-3.5-flash", temperature=0.1, google_api_key=os.getenv("GOOGLE_API_KEY"))
     prompt = f"""You are an automated refactoring tool. 
 Apply the following fix to the file content.
 ISSUE: {flag['description']}

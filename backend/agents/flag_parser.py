@@ -11,7 +11,7 @@ async def parse_flags_from_outputs(
     improvement_suggestions: str,
 ) -> list:
     llm = ChatGoogleGenerativeAI(
-        model="gemini-2.5-flash",
+        model="gemini-3.5-flash",
         temperature=0,
         google_api_key=os.getenv("GOOGLE_API_KEY")
     )

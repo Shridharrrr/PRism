@@ -4,7 +4,7 @@ import os
 
 async def run_security_auditor(diff: str, code_summary: str, metadata: dict = {}) -> str:
     llm = ChatGoogleGenerativeAI(
-        model="gemini-2.5-flash",
+        model="gemini-3.5-flash",
         temperature=0.1,
         google_api_key=os.getenv("GOOGLE_API_KEY")
     )

@@ -12,6 +12,6 @@ if not defined VIRTUAL_ENV (
 )
 
 REM Start Celery worker with solo pool (Windows compatible)
-celery -A celery_app worker --pool=solo --loglevel=info
+celery.exe -A celery_app worker --pool=solo --loglevel=info
 
 pause
