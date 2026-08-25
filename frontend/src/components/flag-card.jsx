@@ -5,19 +5,19 @@ import { ChevronDown, ChevronUp, Check, X, FileCode } from "lucide-react";
 
 const severityConfig = {
   critical: {
-    badge: "bg-red-50 text-red-700 border border-red-200",
-    border: "border-l-2 border-l-red-500",
-    cardBorder: "border-red-200",
+    badge: "bg-red-50 text-red-700 border border-red-200 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/20",
+    border: "border-l-2 border-l-red-500 dark:border-l-red-500/70",
+    cardBorder: "border-red-200 dark:border-red-500/10",
   },
   warning: {
-    badge: "bg-amber-50 text-amber-700 border border-amber-200",
-    border: "border-l-2 border-l-amber-500",
-    cardBorder: "border-amber-200",
+    badge: "bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20",
+    border: "border-l-2 border-l-amber-500 dark:border-l-amber-500/70",
+    cardBorder: "border-amber-200 dark:border-amber-500/10",
   },
   info: {
-    badge: "bg-blue-50 text-blue-700 border border-blue-200",
-    border: "border-l-2 border-l-blue-500",
-    cardBorder: "border-blue-200",
+    badge: "bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20",
+    border: "border-l-2 border-l-blue-500 dark:border-l-blue-500/70",
+    cardBorder: "border-blue-200 dark:border-blue-500/10",
   },
 };
 
@@ -145,11 +145,11 @@ export function FlagCard({ flag }) {
 
           {/* Suggestion */}
           {flag.suggestion && (
-            <div className="rounded-lg border border-blue-200 bg-blue-50/50 px-4 py-3">
-              <p className="text-xs font-semibold text-blue-800 uppercase tracking-wide mb-1.5">
+            <div className="rounded-lg border border-blue-200 bg-blue-50/50 dark:border-blue-500/20 dark:bg-blue-500/5 px-4 py-3">
+              <p className="text-xs font-semibold text-blue-800 dark:text-blue-400 uppercase tracking-wide mb-1.5">
                 Suggestion
               </p>
-              <p className="text-sm text-blue-900 leading-relaxed">
+              <p className="text-sm text-blue-900 dark:text-blue-200 leading-relaxed">
                 {flag.suggestion}
               </p>
             </div>
@@ -159,7 +159,7 @@ export function FlagCard({ flag }) {
           {!decision && (
             <div className="flex gap-2 pt-1 flex-wrap">
               <button
-                className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg border border-purple-200 bg-purple-50 text-purple-700 text-sm font-medium hover:bg-purple-100 transition-colors disabled:opacity-50"
+                className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg border border-purple-200 bg-purple-50 text-purple-700 dark:border-purple-500/20 dark:bg-purple-500/10 dark:text-purple-400 text-sm font-medium hover:bg-purple-100 dark:hover:bg-purple-500/20 transition-colors disabled:opacity-50"
                 onClick={async () => {
                   setLoading("fix");
                   try {
@@ -179,7 +179,7 @@ export function FlagCard({ flag }) {
                 {loading === "fix" ? "Fixing..." : "1-Click Fix"}
               </button>
               <button
-                className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg border border-green-200 bg-green-50 text-green-700 text-sm font-medium hover:bg-green-100 transition-colors disabled:opacity-50"
+                className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg border border-green-200 bg-green-50 text-green-700 dark:border-green-500/20 dark:bg-green-500/10 dark:text-green-400 text-sm font-medium hover:bg-green-100 dark:hover:bg-green-500/20 transition-colors disabled:opacity-50"
                 onClick={() => decide("safe")}
                 disabled={!!loading}
               >
@@ -187,7 +187,7 @@ export function FlagCard({ flag }) {
                 {loading === "safe" ? "Saving..." : "Mark safe"}
               </button>
               <button
-                className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg border border-red-200 bg-red-50 text-red-700 text-sm font-medium hover:bg-red-100 transition-colors disabled:opacity-50"
+                className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg border border-red-200 bg-red-50 text-red-700 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-400 text-sm font-medium hover:bg-red-100 dark:hover:bg-red-500/20 transition-colors disabled:opacity-50"
                 onClick={() => decide("confirmed")}
                 disabled={!!loading}
               >

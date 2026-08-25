@@ -10,9 +10,9 @@ import {
   Shield,
   Settings,
   ChevronLeft,
-  Github,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { LogoutButton } from "@/components/logout-button";
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -95,20 +95,8 @@ export function AppSidebar({ isOpen = true, onOpenChange }) {
           })}
         </nav>
 
-        <div className="border-t border-sidebar-border p-3">
-          <a
-            href="https://github.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            title={!isOpen ? "GitHub" : undefined}
-            className={cn(
-              "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground transition-colors",
-              !isOpen && "justify-center px-2"
-            )}
-          >
-            <Github className="h-5 w-5 flex-shrink-0" />
-            {isOpen && <span>GitHub</span>}
-          </a>
+        <div className="border-t border-sidebar-border p-3 flex flex-col gap-1">
+          <LogoutButton isOpen={isOpen} />
         </div>
       </div>
     </aside>

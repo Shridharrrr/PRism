@@ -3,7 +3,7 @@
 import { createClient } from "@/lib/supabase/client";
 import { LogOut } from "lucide-react";
 
-export function LogoutButton() {
+export function LogoutButton({ isOpen = true }) {
   const supabase = createClient();
 
   const handleLogout = () => {
@@ -15,10 +15,14 @@ export function LogoutButton() {
   return (
     <button
       onClick={handleLogout}
-      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-border/50 bg-secondary text-muted-foreground hover:border-destructive/40 hover:text-destructive hover:bg-destructive/10 transition-all duration-200"
+      title={!isOpen ? "Sign out" : undefined}
+      className={
+        "w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-sidebar-foreground/70 hover:bg-destructive/10 hover:text-destructive transition-colors " +
+        (!isOpen ? "justify-center px-2" : "")
+      }
     >
-      <LogOut className="w-3.5 h-3.5" />
-      <span>Sign out</span>
+      <LogOut className="h-5 w-5 flex-shrink-0" />
+      {isOpen && <span>Sign out</span>}
     </button>
   );
 }

@@ -1,4 +1,6 @@
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, AlertTriangle, ListChecks } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 const statusConfig = {
   analyzing: {
@@ -104,9 +106,60 @@ export function ReviewHeader({ review, flagCount, decidedCount, finalReport }) {
               AI Review Summary
             </p>
           </div>
-          <p className="text-sm text-foreground/80 whitespace-pre-wrap leading-relaxed">
-            {finalReport}
-          </p>
+          <div className="prose prose-sm max-w-none dark:prose-invert prose-p:leading-relaxed prose-headings:font-medium prose-a:text-primary hover:prose-a:underline prose-code:text-xs prose-code:bg-muted prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-pre:bg-muted prose-pre:p-3 prose-pre:rounded-md prose-pre:text-xs text-foreground/90 font-light font-sans tracking-wide">
+            <ReactMarkdown 
+              remarkPlugins={[remarkGfm]}
+              components={{
+                strong: ({ node, ...props }) => {
+                  const text = props.children;
+                  let str = "";
+                  if (typeof text === "string") {
+                    str = text;
+                  } else if (Array.isArray(text)) {
+                    str = text.map(c => (typeof c === "string" ? c : "")).join("");
+                  }
+                  
+                  if (str.includes("Overall Assessment:")) {
+                    const isApproved = str.includes("Approve") || str.includes("Looks good");
+                    const colorClass = isApproved 
+                      ? "text-success bg-success/10 border-success/20" 
+                      : "text-error bg-error/10 border-error/20";
+                    return (
+                      <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-sm font-semibold border mb-2 ${colorClass}`} {...props} />
+                    );
+                  }
+                  if (str.includes("Critical Issues")) {
+                    return (
+                      <span className="text-error font-semibold inline-flex items-center gap-1.5 mt-1">
+                        <AlertTriangle className="w-4 h-4" />
+                        {props.children}
+                      </span>
+                    );
+                  }
+                  if (str.includes("Top 3 Action Items") || str.includes("Action Items")) {
+                    return (
+                      <span className="text-primary font-semibold text-sm inline-flex items-center gap-1.5 mt-3">
+                        <ListChecks className="w-4 h-4" />
+                        {props.children}
+                      </span>
+                    );
+                  }
+                  return <strong className="font-semibold text-foreground" {...props} />;
+                },
+                ul: ({ node, ...props }) => (
+                  <ul className="list-none space-y-3 my-4 ml-1" {...props} />
+                ),
+                li: ({ node, ...props }) => (
+                  <li className="flex gap-3 items-start" {...props}>
+                    <div className="min-w-1.5 min-h-1.5 max-w-1.5 max-h-1.5 rounded-full bg-primary/40 mt-2.5 shrink-0" />
+                    <span className="flex-1">{props.children}</span>
+                  </li>
+                ),
+              }}
+            >
+              {finalReport}
+            </ReactMarkdown>
+          </div>
         </div>
       )}
     </div>

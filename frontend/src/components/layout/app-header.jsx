@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { User } from "lucide-react";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
-import { LogoutButton } from "@/components/logout-button";
 
 export function AppHeader({ user }) {
   return (
@@ -34,7 +33,6 @@ export function AppHeader({ user }) {
                     {user.user_metadata?.user_name || "User"}
                   </span>
                 </div>
-                <LogoutButton />
               </>
             ) : (
               <Link
