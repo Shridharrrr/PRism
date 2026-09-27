@@ -7,7 +7,7 @@ import {
   User,
   Calendar,
   Loader2,
-  Sparkles,
+  Play,
   FileCode,
   GitMerge,
 } from "lucide-react";
@@ -182,7 +182,7 @@ export function PRList({ owner, repo, repoId, accessToken, userId }) {
               </>
             ) : (
               <>
-                <Sparkles className="w-4 h-4" />
+                <Play className="w-3.5 h-3.5 fill-current" />
                 <span className="hidden sm:inline">Analyze PR</span>
                 <span className="sm:hidden">Analyze</span>
               </>

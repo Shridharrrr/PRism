@@ -8,8 +8,8 @@ import { Bell, FolderGit2, Palette, Shield } from "lucide-react";
 export default function SettingsIndexPage() {
   return (
     <AuthenticatedLayout>
-      <div className="flex-1 max-w-5xl mx-auto w-full px-6 py-8">
-        <h1 className="text-3xl font-bold tracking-tight mb-2">Settings</h1>
+      <div className="flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6 py-6 sm:py-8">
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight mb-2">Settings</h1>
         <p className="text-muted-foreground mb-8">
           Workspace defaults, appearance, and where to configure per-repo integrations.
         </p>

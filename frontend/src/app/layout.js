@@ -1,17 +1,26 @@
-import { Inter, JetBrains_Mono } from "next/font/google";
+import { Inter, JetBrains_Mono, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/layout/theme-provider";
 
 const inter = Inter({
-  variable: "--font-inter",
   subsets: ["latin"],
   display: "swap",
+  variable: "--font-inter",
+  weight: ["300", "400", "500", "600", "700"],
+});
+
+const plusJakartaSans = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-heading",
+  weight: ["400", "500", "600", "700"],
 });
 
 const jetbrainsMono = JetBrains_Mono({
-  variable: "--font-jetbrains-mono",
   subsets: ["latin"],
   display: "swap",
+  variable: "--font-jetbrains-mono",
+  weight: ["400", "500", "600"],
 });
 
 export const metadata = {
@@ -24,10 +33,10 @@ export default function RootLayout({ children }) {
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${jetbrainsMono.variable} h-full antialiased font-sans`}
+      className={`${inter.variable} ${jetbrainsMono.variable} ${plusJakartaSans.variable} h-full antialiased`}
       suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col bg-background">
+      <body className={`${inter.className} min-h-full flex flex-col bg-background text-foreground`}>
         <ThemeProvider>
           {children}
         </ThemeProvider>

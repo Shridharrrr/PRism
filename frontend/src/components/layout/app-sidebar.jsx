@@ -10,6 +10,7 @@ import {
   Shield,
   Settings,
   ChevronLeft,
+  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LogoutButton } from "@/components/logout-button";
@@ -23,54 +24,54 @@ const navigation = [
   { name: "Settings", href: "/settings", icon: Settings },
 ];
 
-export function AppSidebar({ isOpen = true, onOpenChange }) {
+export function AppSidebar({
+  isDesktopOpen = true,
+  onDesktopOpenChange,
+  isMobileOpen = false,
+  onMobileOpenChange,
+}) {
   const pathname = usePathname();
 
   return (
-    <aside
-      className={cn(
-        "fixed left-0 top-0 z-40 h-screen border-r border-sidebar-border bg-sidebar transition-all duration-300 ease-in-out",
-        isOpen ? "w-64" : "w-16"
+    <>
+      {/* ── Mobile Overlay Backdrop ── */}
+      {isMobileOpen && (
+        <div
+          className="fixed inset-0 bg-background/80 backdrop-blur-sm z-40 md:hidden transition-opacity"
+          onClick={() => onMobileOpenChange?.(false)}
+        />
       )}
-    >
-      <div className="flex h-full flex-col">
-        <div className="relative flex h-16 items-center px-4 border-b border-sidebar-border">
+
+      {/* ── Mobile Drawer (Slide In from Left) ── */}
+      <aside
+        className={cn(
+          "fixed left-0 top-0 z-50 h-screen w-72 border-r border-sidebar-border bg-sidebar transition-transform duration-300 ease-in-out md:hidden flex flex-col shadow-2xl",
+          isMobileOpen ? "translate-x-0" : "-translate-x-full"
+        )}
+      >
+        <div className="flex h-16 items-center justify-between px-5 border-b border-sidebar-border">
           <Link
             href="/dashboard"
-            className={cn(
-              "flex items-center gap-3 overflow-hidden transition-all duration-300",
-              !isOpen && "opacity-0 hidden"
-            )}
+            onClick={() => onMobileOpenChange?.(false)}
+            className="flex items-center gap-2.5"
           >
-            <div className="w-8 h-8 bg-sidebar-foreground flex items-center justify-center flex-shrink-0 transition-transform hover:scale-95">
-              <div className="w-3 h-3 bg-sidebar" />
+            <div className="w-7 h-7 rounded-lg bg-sidebar-foreground flex items-center justify-center">
+              <div className="w-3 h-3 rounded-xs bg-sidebar" />
             </div>
-            
-            {isOpen && (
-              <span className="font-bold text-xl tracking-tight text-sidebar-foreground whitespace-nowrap">
-                PRism
-              </span>
-            )}
+            <span className="font-bold text-lg tracking-tight text-sidebar-foreground">
+              PRism
+            </span>
           </Link>
-
           <button
-            onClick={() => onOpenChange?.(!isOpen)}
-            className={cn(
-              "w-8 h-8 bg-sidebar border border-sidebar-border rounded-none hover:bg-sidebar-accent transition-colors flex items-center justify-center shadow-sm z-50",
-              isOpen ? "absolute right-3 top-4" : "mx-auto mt-4"
-            )}
-            aria-label={isOpen ? "Collapse sidebar" : "Expand sidebar"}
+            onClick={() => onMobileOpenChange?.(false)}
+            className="p-1.5 rounded-lg text-sidebar-foreground hover:bg-sidebar-accent transition-colors"
+            aria-label="Close menu"
           >
-            <ChevronLeft
-              className={cn(
-                "h-4 w-4 text-sidebar-foreground transition-transform duration-300",
-                !isOpen && "rotate-180"
-              )}
-            />
+            <X className="w-5 h-5" />
           </button>
         </div>
 
-        <nav className="flex-1 space-y-1 p-3">
+        <nav className="flex-1 space-y-1.5 p-4 overflow-y-auto">
           {navigation.map((item) => {
             const isActive =
               pathname === item.href || pathname.startsWith(item.href + "/");
@@ -78,27 +79,103 @@ export function AppSidebar({ isOpen = true, onOpenChange }) {
               <Link
                 key={item.name}
                 href={item.href}
-                title={!isOpen ? item.name : undefined}
+                onClick={() => onMobileOpenChange?.(false)}
                 className={cn(
-                  "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
+                  "group flex items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-medium transition-all duration-200",
                   isActive
-                    ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-sm"
-                    : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground",
-                  !isOpen && "justify-center px-2"
+                    ? "bg-sidebar-accent text-sidebar-accent-foreground font-semibold shadow-xs"
+                    : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
                 )}
               >
                 <item.icon className="h-5 w-5 flex-shrink-0 transition-transform duration-200 group-hover:scale-105" />
-                {isOpen && <span>{item.name}</span>}
-                {!isOpen && <span className="sr-only">{item.name}</span>}
+                <span>{item.name}</span>
               </Link>
             );
           })}
         </nav>
 
-        <div className="border-t border-sidebar-border p-3 flex flex-col gap-1">
-          <LogoutButton isOpen={isOpen} />
+        <div className="border-t border-sidebar-border p-4">
+          <LogoutButton isOpen={true} />
         </div>
-      </div>
-    </aside>
+      </aside>
+
+      {/* ── Desktop Sidebar ── */}
+      <aside
+        className={cn(
+          "hidden md:block fixed left-0 top-0 z-30 h-screen border-r border-sidebar-border bg-sidebar transition-all duration-300 ease-in-out",
+          isDesktopOpen ? "w-64" : "w-16"
+        )}
+      >
+        <div className="flex h-full flex-col">
+          {/* Sidebar Top Header */}
+          <div className="relative flex h-16 items-center px-4 border-b border-sidebar-border">
+            <Link
+              href="/dashboard"
+              className={cn(
+                "flex items-center gap-2.5 overflow-hidden transition-all duration-300",
+                !isDesktopOpen && "opacity-0 hidden"
+              )}
+            >
+              <div className="w-7 h-7 rounded-lg bg-sidebar-foreground flex items-center justify-center flex-shrink-0 transition-transform hover:scale-95">
+                <div className="w-3 h-3 rounded-xs bg-sidebar" />
+              </div>
+
+              {isDesktopOpen && (
+                <span className="font-bold text-lg tracking-tight text-sidebar-foreground whitespace-nowrap">
+                  PRism
+                </span>
+              )}
+            </Link>
+
+            <button
+              onClick={() => onDesktopOpenChange?.(!isDesktopOpen)}
+              className={cn(
+                "w-7 h-7 bg-sidebar border border-sidebar-border rounded-lg hover:bg-sidebar-accent transition-colors flex items-center justify-center shadow-xs z-50",
+                isDesktopOpen ? "absolute right-3.5 top-4.5" : "mx-auto mt-0"
+              )}
+              aria-label={isDesktopOpen ? "Collapse sidebar" : "Expand sidebar"}
+            >
+              <ChevronLeft
+                className={cn(
+                  "h-4 w-4 text-sidebar-foreground transition-transform duration-300",
+                  !isDesktopOpen && "rotate-180"
+                )}
+              />
+            </button>
+          </div>
+
+          {/* Desktop Navigation */}
+          <nav className="flex-1 space-y-1 p-3">
+            {navigation.map((item) => {
+              const isActive =
+                pathname === item.href || pathname.startsWith(item.href + "/");
+              return (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  title={!isDesktopOpen ? item.name : undefined}
+                  className={cn(
+                    "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200",
+                    isActive
+                      ? "bg-sidebar-accent text-sidebar-accent-foreground font-semibold shadow-xs"
+                      : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground",
+                    !isDesktopOpen && "justify-center px-2"
+                  )}
+                >
+                  <item.icon className="h-4.5 w-4.5 flex-shrink-0 transition-transform duration-200 group-hover:scale-105" />
+                  {isDesktopOpen && <span>{item.name}</span>}
+                  {!isDesktopOpen && <span className="sr-only">{item.name}</span>}
+                </Link>
+              );
+            })}
+          </nav>
+
+          {/* Desktop Footer */}
+          <div className="border-t border-sidebar-border p-3 flex flex-col gap-1">
+            <LogoutButton isOpen={isDesktopOpen} />
+          </div>
+        </div>
+      </aside>
+    </>
   );
 }

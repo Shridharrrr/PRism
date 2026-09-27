@@ -16,7 +16,7 @@ import {
   GitPullRequest,
   FileJson,
   ShieldAlert,
-  Sparkles,
+  FileCode,
   Search,
   FileText,
   CheckCircle2,
@@ -30,7 +30,7 @@ const icons = {
   GitPullRequest,
   FileJson,
   ShieldAlert,
-  Sparkles,
+  FileCode,
   Search,
   FileText,
   CheckCircle2,
@@ -202,7 +202,7 @@ export function AnalysisGraph({ review, flags = [] }) {
             st.agents === "completed"
               ? `${qualFlags} suggestions`
               : "Checking code smells",
-          iconName: "Sparkles",
+          iconName: "FileCode",
           status: st.agents,
         },
       },

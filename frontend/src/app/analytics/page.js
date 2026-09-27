@@ -42,9 +42,9 @@ export default function AnalyticsPage() {
 
   return (
     <AuthenticatedLayout>
-      <div className="flex-1 max-w-7xl mx-auto w-full px-6 py-8">
+      <div className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 py-6 sm:py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold tracking-tight mb-2">Analytics</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight mb-2">Analytics</h1>
           <p className="text-muted-foreground">
             Review volume, finding trends, and quality posture across your workspace.
           </p>

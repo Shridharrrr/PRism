@@ -87,7 +87,7 @@ export default function DashboardPage() {
 
   return (
     <AuthenticatedLayout>
-      <div className="flex-1 max-w-7xl mx-auto w-full px-6 py-8">
+      <div className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 py-6 sm:py-8">
         
         {/* Top Header */}
         <div className="mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-border pb-6">

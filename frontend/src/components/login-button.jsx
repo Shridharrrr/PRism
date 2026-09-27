@@ -3,7 +3,7 @@
 import { createClient } from "@/lib/supabase/client";
 import { Github } from "lucide-react";
 
-export function LoginButton({ size = "default", variant = "default" }) {
+export function LoginButton({ size = "default", variant = "default", className = "" }) {
   const supabase = createClient();
 
   const handleLogin = async () => {
@@ -17,28 +17,30 @@ export function LoginButton({ size = "default", variant = "default" }) {
   };
 
   const base =
-    "inline-flex items-center justify-center gap-2.5 font-semibold rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/50 cursor-pointer";
+    "relative group inline-flex items-center justify-center gap-2.5 font-medium rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-ring/50 active:scale-[0.98] cursor-pointer select-none overflow-hidden";
 
   const sizes = {
-    sm: "px-4 py-2 text-sm",
+    sm: "px-3.5 py-1.5 text-xs font-semibold tracking-wide",
     default: "px-5 py-2.5 text-sm",
-    lg: "px-8 py-3.5 text-base",
+    lg: "px-6 sm:px-8 py-3.5 text-sm sm:text-base font-semibold tracking-tight",
   };
 
   const variants = {
     default:
-      "bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/25",
+      "bg-foreground text-background hover:bg-foreground/90 shadow-md shadow-black/10 dark:shadow-black/40 border border-foreground/10",
     outline:
-      "border border-border/60 bg-transparent text-foreground hover:border-primary/50 hover:text-primary hover:bg-primary/10",
+      "border border-border/80 bg-background/80 hover:bg-muted/80 text-foreground hover:border-foreground/30 backdrop-blur-sm",
+    shimmer:
+      "bg-foreground text-background hover:opacity-95 shadow-lg shadow-black/10 dark:shadow-black/50 border border-foreground/20",
   };
 
   return (
     <button
       onClick={handleLogin}
-      className={`${base} ${sizes[size] ?? sizes.default} ${variants[variant] ?? variants.default}`}
+      className={`${base} ${sizes[size] ?? sizes.default} ${variants[variant] ?? variants.default} ${className}`}
     >
-      <Github className={size === "lg" ? "w-5 h-5" : "w-4 h-4"} />
-      Continue with GitHub
+      <Github className={size === "lg" ? "w-5 h-5 transition-transform group-hover:scale-110" : "w-4 h-4 transition-transform group-hover:scale-110"} />
+      <span>Continue with GitHub</span>
     </button>
   );
 }

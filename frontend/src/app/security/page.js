@@ -29,10 +29,10 @@ export default function SecurityPage() {
 
   return (
     <AuthenticatedLayout>
-      <div className="flex-1 max-w-7xl mx-auto w-full px-6 py-8">
+      <div className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 py-6 sm:py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold tracking-tight mb-2">Security</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight mb-2">Security</h1>
+          <p className="text-muted-foreground text-sm sm:text-base">
             Workspace security posture derived from PRism findings, not a trained model.
           </p>
         </div>

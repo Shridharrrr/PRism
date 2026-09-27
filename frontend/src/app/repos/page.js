@@ -20,17 +20,17 @@ export default async function ReposPage() {
 
   return (
     <AuthenticatedLayout>
-      <div className="flex-1 max-w-5xl mx-auto w-full px-6 py-8">
+      <div className="flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6 py-6 sm:py-8">
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
             <div className="w-10 h-10 rounded-lg bg-muted border border-border flex items-center justify-center">
               <GitFork className="w-5 h-5 text-foreground" />
             </div>
-            <h1 className="text-3xl font-bold tracking-tight text-foreground">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
               Your Repositories
             </h1>
           </div>
-          <p className="text-muted-foreground text-sm ml-[52px]">
+          <p className="text-muted-foreground text-sm sm:ml-[52px]">
             Connect a repository to start analyzing pull requests with AI
           </p>
         </div>

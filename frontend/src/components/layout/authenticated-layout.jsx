@@ -11,7 +11,8 @@ import { Loader2 } from "lucide-react";
 export function AuthenticatedLayout({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [desktopSidebarOpen, setDesktopSidebarOpen] = useState(true);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
 
@@ -35,22 +36,36 @@ export function AuthenticatedLayout({ children }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-3">
+        <div className="w-9 h-9 rounded-xl bg-foreground flex items-center justify-center animate-pulse">
+          <div className="w-4 h-4 bg-background rounded-xs" />
+        </div>
+        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-background">
-      <AppSidebar isOpen={sidebarOpen} onOpenChange={setSidebarOpen} />
+      {/* Sidebar for both Desktop and Mobile */}
+      <AppSidebar
+        isDesktopOpen={desktopSidebarOpen}
+        onDesktopOpenChange={setDesktopSidebarOpen}
+        isMobileOpen={mobileMenuOpen}
+        onMobileOpenChange={setMobileMenuOpen}
+      />
+
+      {/* Main Content Area */}
       <div
-        className={`min-h-screen flex flex-col transition-[padding] duration-300 ease-in-out ${
-          sidebarOpen ? "pl-64" : "pl-16"
+        className={`min-h-screen flex flex-col transition-[padding] duration-300 ease-in-out pl-0 ${
+          desktopSidebarOpen ? "md:pl-64" : "md:pl-16"
         }`}
       >
-        <AppHeader user={user} />
-        <main className="flex-1">{children}</main>
+        <AppHeader
+          user={user}
+          onMobileMenuToggle={() => setMobileMenuOpen(!mobileMenuOpen)}
+        />
+        <main className="flex-1 w-full max-w-full overflow-x-hidden">{children}</main>
         <AppFooter />
       </div>
     </div>
