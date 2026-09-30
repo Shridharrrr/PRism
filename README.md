@@ -1,271 +1,196 @@
-# PRism - AI-Powered Code Review
+# PRism
 
-PRism analyzes your GitHub pull requests with specialized AI agents, catching security vulnerabilities and code quality issues before they ship.
+PRism is an automated code review platform that analyzes GitHub pull requests using specialized AI agents. It flags security vulnerabilities, detects quality regressions, and participates directly in pull request conversations to help teams ship safer code faster.
 
-## Features
+---
 
-### Core Review Capabilities
-- 🛡️ **Security Auditor** - Detects SQL injection, XSS, hardcoded secrets, auth bypasses
-- 👁️ **Quality Inspector** - Identifies code smells, anti-patterns, missing error handling
-- ⚡ **Instant Analysis** - Get detailed AI review results in seconds
-- 🔔 **Auto-Trigger** - Automatically analyze every new PR via webhooks
+## Overview
 
-### CodeRabbit-like Features (New!)
-- 💬 **Unified PR Reviews** - Creates comprehensive GitHub reviews with approve/request changes status
-- 🤖 **Interactive AI Responses** - AI responds when developers ask questions on review comments
-- 📝 **Conversational Comments** - Detailed explanations with code suggestions in markdown
-- ⚙️ **Customizable Reviews** - Configure tone, thresholds, and ignore patterns via `.prism.yaml`
-- ✅ **Auto-Approve** - Automatically approves clean PRs with no critical issues
-- 🎯 **Smart Filtering** - Focus on specific areas: security, performance, best practices
+PRism integrates into your existing development workflow through GitHub webhooks. When a pull request opens or receives new commits, PRism pulls the diff, routes it through dedicated analysis agents, and publishes a structured review directly to GitHub. Developers can also reply to PRism's comments to ask follow-up questions, and the AI will respond in-thread with contextual answers and code suggestions.
 
-## Tech Stack
+### Core Capabilities
 
-- **Frontend**: Next.js 16, React 19, Tailwind CSS 4, shadcn/ui
-- **Backend**: FastAPI, LangGraph, Google Gemini AI
-- **Database**: Supabase (PostgreSQL)
-- **Task Queue**: Celery + Redis
-- **Authentication**: Supabase Auth (GitHub OAuth)
+- Security Auditing: Catches SQL injection risks, cross-site scripting vulnerabilities, leaked credentials, and authorization gaps.
+- Quality Inspection: Identifies code smells, anti-patterns, redundant operations, and missing error handlers.
+- Unified PR Reviews: Posts GitHub reviews with appropriate statuses (Approve, Request Changes, or Comment).
+- Interactive Threads: Engages directly when developers reply to review comments, clarifying rationale and proposing concrete fixes.
+- Flexible Configuration: Adjust review strictness, comment tone, and ignore lists using a repository-level `.prism.yaml` file.
+- Automated Approvals: Safely approves pull requests when no critical or high-severity issues are detected.
 
-## Prerequisites
+---
+
+## Architecture & Tech Stack
+
+- Frontend: Next.js (App Router), React, Tailwind CSS, Radix UI
+- Backend: FastAPI, LangGraph, Google Gemini
+- Task Queue: Celery, Redis
+- Database & Auth: Supabase (PostgreSQL, GitHub OAuth)
+
+```
+PRism Architecture
+------------------
+GitHub Webhook -> FastAPI API -> Celery Task Queue (Redis)
+                                      |
+                                      v
+                               LangGraph Workflow
+                               (Gemini AI Agents)
+                                      |
+                                      +--> Post Review / Comment on GitHub
+                                      +--> Persist Data in Supabase
+                                      +--> Stream Updates to Next.js UI
+```
+
+---
+
+## Getting Started
+
+### Prerequisites
 
 - Node.js 18+ and npm
 - Python 3.10+
-- Docker and Docker Compose (for Redis)
-- Supabase account
-- Google AI API key
+- Docker (for local Redis)
+- Supabase account and project
+- Google AI (Gemini) API key
 - GitHub App credentials
 
-## Quick Start
+---
 
-### 1. Clone the repository
-
-\`\`\`bash
-git clone <your-repo-url>
-cd PRism
-\`\`\`
-
-### 2. Start Redis with Docker
-
-\`\`\`bash
-docker-compose up -d
-\`\`\`
-
-This will start Redis on `localhost:6379`. Verify it's running:
-
-\`\`\`bash
-docker ps
-\`\`\`
-
-### 3. Setup Backend
-
-\`\`\`bash
-cd backend
-
-# Create and activate virtual environment
-python -m venv venv
-source venv/Scripts/activate  # On Windows Git Bash
-# or: .\venv\Scripts\Activate.ps1  # On Windows PowerShell
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Copy and configure environment variables
-cp .env.example .env
-# Edit .env with your credentials
-\`\`\`
-
-### 4. Setup Frontend
-
-\`\`\`bash
-cd frontend
-npm install
-
-# Copy and configure environment variables
-cp .env.example .env.local
-# Edit .env.local with your Supabase URL and anon key
-\`\`\`
-
-### 5. Run the Application
-
-You'll need **three terminals**:
-
-**Terminal 1 - Start Celery Worker:**
-
-**On Windows (use solo pool):**
-\`\`\`bash
-cd backend
-source venv/Scripts/activate
-celery -A celery_app worker --pool=solo --loglevel=info
-\`\`\`
-
-**On Linux/Mac:**
-\`\`\`bash
-cd backend
-source venv/bin/activate
-celery -A celery_app worker --loglevel=info
-\`\`\`
-
-**Or use the helper scripts:**
-- Windows Git Bash: `./start-celery-windows.sh`
-- Windows CMD/PowerShell: `start-celery-windows.bat`
-
-**Terminal 2 - Start FastAPI Backend:**
-\`\`\`bash
-cd backend
-source venv/Scripts/activate
-uvicorn main:app --reload --port 8000
-\`\`\`
-
-**Terminal 3 - Start Next.js Frontend:**
-\`\`\`bash
-cd frontend
-npm run dev
-\`\`\`
-
-The application will be available at:
-- Frontend: http://localhost:3000
-- Backend API: http://localhost:8000
-- API Docs: http://localhost:8000/docs
-
-## Docker Commands
-
-### Start Redis
-\`\`\`bash
-docker-compose up -d
-\`\`\`
-
-### Stop Redis
-\`\`\`bash
-docker-compose down
-\`\`\`
-
-### View Redis logs
-\`\`\`bash
-docker-compose logs -f redis
-\`\`\`
-
-### Reset Redis data
-\`\`\`bash
-docker-compose down -v
-docker-compose up -d
-\`\`\`
-
-## Environment Variables
-
-### Backend (.env)
-
-- `SUPABASE_URL` - Your Supabase project URL
-- `SUPABASE_SERVICE_ROLE_KEY` - Supabase service role key
-- `GOOGLE_API_KEY` - Google AI API key for Gemini
-- `LANGCHAIN_API_KEY` - LangSmith API key (optional, for tracing)
-- `GITHUB_APP_ID` - Your GitHub App ID
-- `GITHUB_APP_PRIVATE_KEY_PATH` - Path to GitHub App private key
-- `GITHUB_WEBHOOK_SECRET` - Webhook secret for GitHub
-- `REDIS_URL` - Redis connection URL (default: redis://localhost:6379)
-
-### Frontend (.env.local)
-
-- `NEXT_PUBLIC_SUPABASE_URL` - Your Supabase project URL
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Supabase anon/public key
-
-## Development
-
-### Backend Structure
-
-\`\`\`
-backend/
-├── agents/          # LangGraph AI agents
-├── routers/         # FastAPI route handlers
-├── tools/           # LangChain tools
-├── main.py          # FastAPI app entry point
-├── celery_app.py    # Celery configuration
-└── tasks.py         # Celery background tasks
-\`\`\`
-
-### Frontend Structure
-
-\`\`\`
-frontend/
-├── src/
-│   ├── app/          # Next.js app router pages
-│   ├── components/   # React components
-│   └── lib/          # Utility functions
-\`\`\`
-
-## Troubleshooting
-
-### Celery on Windows: PermissionError or Process Errors
-
-**Problem**: Celery worker crashes with `PermissionError: [WinError 5] Access is denied` or process spawn errors.
-
-**Solution**: Use the `gevent` pool instead of the default `prefork` pool:
+### Step 1: Clone the Repository
 
 ```bash
-celery -A celery_app worker --pool=solo --loglevel=info
+git clone https://github.com/your-username/PRism.git
+cd PRism
 ```
 
-Or use the helper scripts:
-- `./start-celery-windows.sh` (Git Bash)
-- `start-celery-windows.bat` (CMD/PowerShell)
+### Step 2: Start Redis
 
-**Why**: Windows doesn't support process forking like Unix systems, so Celery's default `prefork` pool fails. The `solo` pool circumvents this by running in a single thread, which works perfectly on Windows for local development.
+Start Redis in the background using Docker Compose:
 
-### Redis connection issues
+```bash
+docker compose up -d
+```
 
-If Celery can't connect to Redis:
+Verify Redis is running on port 6379:
 
-1. Check if Redis is running: `docker ps`
-2. Verify Redis URL in `.env`: `REDIS_URL=redis://localhost:6379`
-3. Test Redis connection: `docker exec -it prism-redis redis-cli ping` (should return PONG)
+```bash
+docker ps
+```
 
-### Frontend can't reach backend
+### Step 3: Configure and Start the Backend
 
-- Ensure backend is running on port 8000
-- Check CORS settings in `backend/main.py`
-- Verify frontend is making requests to `http://localhost:8000`
+1. Navigate to the backend directory and set up a Python virtual environment:
 
-### Celery worker not processing tasks
+```bash
+cd backend
+python -m venv venv
+```
 
-1. Check Celery logs for errors
-2. Verify Redis is running and accessible
-3. Ensure `.env` file has correct `REDIS_URL`
-4. On Windows, make sure you're using `--pool=solo`
+2. Activate the virtual environment:
 
-## GitHub App Setup for CodeRabbit-like Features
+- Windows (PowerShell):
+  ```powershell
+  .\venv\Scripts\Activate.ps1
+  ```
+- Windows (CMD):
+  ```cmd
+  .\venv\Scripts\activate.bat
+  ```
+- macOS / Linux:
+  ```bash
+  source venv/bin/activate
+  ```
 
-### Required Permissions
+3. Install the dependencies:
 
-Your GitHub App needs these permissions:
+```bash
+pip install -r requirements.txt
+```
 
-**Repository Permissions:**
-- Pull requests: **Read & Write** (for creating reviews)
-- Contents: **Read** (for fetching code)
-- Checks: **Read & Write** (for status checks)
-- Issues: **Read & Write** (for comment replies)
+4. Create your `.env` file based on `.env.example`:
 
-**Subscribe to these events:**
-- `pull_request` (already configured)
-- `pull_request_review` (new)
-- `pull_request_review_comment` (new - for inline comments)
-- `issue_comment` (new - for PR comments)
+```bash
+cp .env.example .env
+```
 
-### Webhook Configuration
+Ensure the following variables are configured:
 
-Add these webhook URLs in your GitHub App settings:
+```ini
+SUPABASE_URL=your_supabase_url
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+GOOGLE_API_KEY=your_gemini_api_key
+GITHUB_APP_ID=your_github_app_id
+GITHUB_APP_PRIVATE_KEY_PATH=github_app.pem
+GITHUB_WEBHOOK_SECRET=your_webhook_secret
+REDIS_URL=redis://localhost:6379
+PRISM_BOT_NAME=prismreview[bot]
+```
 
-- **PR Events:** `https://your-domain.com/api/webhooks/github`
-- **Comment Events:** `https://your-domain.com/api/webhooks/github/comments`
+5. Run the FastAPI development server:
 
-## Configuration with .prism.yaml
+```bash
+uvicorn main:app --reload --port 8000
+```
 
-Create a `.prism.yaml` file in your repository root to customize reviews:
+The API will be available at `http://localhost:8000`, with interactive docs at `http://localhost:8000/docs`.
+
+### Step 4: Start the Celery Worker
+
+In a separate terminal, activate the backend virtual environment and start the worker:
+
+- Windows:
+  ```powershell
+  cd backend
+  .\celery.bat
+  ```
+  *(Or manually: `celery -A celery_app worker --pool=solo --loglevel=info`)*
+
+- macOS / Linux:
+  ```bash
+  cd backend
+  source venv/bin/activate
+  celery -A celery_app worker --loglevel=info
+  ```
+
+> Note for Windows users: Celery requires `--pool=solo` on Windows because standard process forking is not supported. The included `celery.bat` script handles this automatically.
+
+### Step 5: Configure and Start the Frontend
+
+In another terminal, set up the Next.js frontend:
+
+```bash
+cd frontend
+npm install
+```
+
+Create a `.env` (or `.env.local`) file:
+
+```ini
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+GITHUB_CLIENT_ID=your_github_oauth_client_id
+GITHUB_CLIENT_SECRET=your_github_oauth_client_secret
+```
+
+Start the frontend development server:
+
+```bash
+npm run dev
+```
+
+Visit `http://localhost:3000` in your browser.
+
+---
+
+## Configuration via `.prism.yaml`
+
+You can customize how PRism evaluates pull requests in each repository by creating a `.prism.yaml` file in the repository root.
 
 ```yaml
 review:
   auto_approve_if_no_critical: true
   comment_on_every_file: false
   critical_threshold: 1
-  tone: "professional"  # professional, friendly, concise
+  tone: "professional" # Options: professional, friendly, concise
   include_code_suggestions: true
   include_explanations: true
   enable_interactive_responses: true
@@ -275,6 +200,8 @@ ignore_patterns:
   - "*.test.js"
   - "*.spec.ts"
   - "**/__tests__/**"
+  - "**/node_modules/**"
+  - "**/dist/**"
 
 focus_areas:
   - security
@@ -282,74 +209,70 @@ focus_areas:
   - best_practices
 ```
 
-See `.prism.yaml.example` for a complete configuration template.
+Refer to `.prism.yaml.example` for the full reference with comments.
 
-## Database Migration
+---
 
-Run the migration to add CodeRabbit-like features:
+## GitHub App Setup
 
-```sql
--- In your Supabase SQL editor, run:
--- backend/migrations/001_coderabbit_features.sql
-```
+To enable automated PR reviews and inline comment threads, configure your GitHub App with:
 
-This adds tables for:
-- `github_reviews` - GitHub PR review metadata
-- `review_comments` - Individual comments posted on PRs
-- `comment_threads` - Conversation threads including bot responses
+### Repository Permissions
+- Pull requests: Read & Write
+- Contents: Read
+- Checks: Read & Write
+- Issues: Read & Write
 
-## Environment Variables (New)
+### Subscribed Events
+- Pull request
+- Pull request review
+- Pull request review comment
+- Issue comment
 
-Add these to your `backend/.env`:
+### Webhook URL
+Point your GitHub App webhook to:
+`https://your-public-url.com/api/webhooks/github` (or use a tunneling tool such as ngrok or cloudflared during development).
 
-```bash
-# PRism Bot Configuration
-PRISM_BOT_NAME=prism[bot]
-PRISM_RESPONSE_DELAY=2
-PRISM_MAX_COMMENT_LENGTH=65000
-PRISM_ENABLE_AUTO_APPROVE=true
-PRISM_INTERACTIVE_RESPONSES=true
-```
+---
 
-## How It Works
+## Primary API Endpoints
 
-### 1. Automatic PR Review
-When a PR is opened/updated:
-1. PRism fetches the PR diff
-2. AI agents analyze the code
-3. Issues are parsed and categorized
-4. A unified GitHub review is created with:
-   - Conversational comments on specific lines
-   - Overall assessment (Approve/Request Changes/Comment)
-   - Summary with statistics and key findings
+- `GET /health` - Service health status
+- `GET /health/db` - Supabase connectivity check
+- `GET /health/redis` - Redis connectivity check
+- `POST /api/webhooks/github` - Primary GitHub webhook receiver
+- `POST /api/webhooks/github/comments` - Webhook receiver for comment replies
+- `GET /api/reviews/{id}` - Fetch review metadata and findings
+- `GET /api/reviews/{id}/comments` - Fetch review comment threads
+- `GET /api/repos/{id}/config` - Read repository `.prism.yaml` settings
 
-### 2. Interactive Responses
-When a developer replies to a PRism comment:
-1. Webhook detects the reply
-2. AI generates a contextual response
-3. Response is posted as a comment reply
-4. Conversation continues until issue is resolved
+---
 
-### 3. Review States
-- **APPROVE**: No issues found (if auto-approve enabled)
-- **REQUEST_CHANGES**: Critical issues detected
-- **COMMENT**: Warnings/suggestions found
-
-## API Endpoints (New)
+## Project Structure
 
 ```
-GET    /api/reviews/{id}/github-review     # Get GitHub review details
-GET    /api/reviews/{id}/comments          # Get comment threads
-POST   /api/reviews/{id}/dismiss           # Dismiss GitHub review
-GET    /api/repos/{id}/config              # Get .prism.yaml config
-PUT    /api/repos/{id}/config              # Validate config
-POST   /api/webhooks/github/comments       # Handle comment events
+PRism/
+├── backend/
+│   ├── agents/          # LangGraph agents (security, quality, report)
+│   ├── routers/         # FastAPI endpoints (reviews, flags, webhooks)
+│   ├── tools/           # GitHub tools and config parser
+│   ├── celery_app.py    # Celery app initialization
+│   ├── tasks.py         # Asynchronous review tasks
+│   ├── celery.bat       # Windows worker launch script
+│   ├── main.py          # FastAPI application entry point
+│   └── requirements.txt # Python package requirements
+├── frontend/
+│   ├── src/
+│   │   ├── app/         # Next.js App Router routes & pages
+│   │   ├── components/  # React UI and layout components
+│   │   └── lib/         # Supabase client and utilities
+│   └── package.json     # Node.js dependencies and scripts
+├── .prism.yaml.example  # Configuration template for repositories
+└── docker-compose.yml   # Redis container definition
 ```
+
+---
 
 ## License
 
-MIT
-
-## Contributing
-
-Contributions are welcome! Please open an issue or submit a pull request.
+This project is licensed under the MIT License.

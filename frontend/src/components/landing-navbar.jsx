@@ -2,37 +2,52 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { LoginButton } from "@/components/login-button";
 import { Menu, X, ArrowRight } from "lucide-react";
 
 export function LandingNavbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const pathname = usePathname();
 
   return (
     <header className="fixed top-0 inset-x-0 z-50 border-b border-border/80 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60 transition-all duration-200">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
         {/* Brand */}
-        <Link href="/" className="flex items-center gap-2.5 group" aria-label="PRism home">
-          <div className="w-8 h-8 rounded-lg bg-foreground flex items-center justify-center transition-transform duration-200 group-hover:scale-95 shadow-xs">
-            <div className="w-3.5 h-3.5 rounded-xs bg-background" />
-          </div>
-          <span className="font-semibold text-lg sm:text-xl tracking-tight text-foreground">
-            PRism
-          </span>
-        </Link>
+        <div className="flex items-center">
+          <Link href="/" className="flex items-center gap-2.5 group" aria-label="PRism home">
+            <div className="w-8 h-8 rounded-lg bg-foreground flex items-center justify-center transition-transform duration-200 group-hover:scale-95 shadow-xs">
+              <div className="w-3.5 h-3.5 rounded-xs bg-background" />
+            </div>
+            <span className="font-semibold text-lg sm:text-xl tracking-tight text-foreground">
+              PRism
+            </span>
+          </Link>
+        </div>
 
-        {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center gap-8" aria-label="Primary navigation">
+        {/* Desktop Navigation - Centered */}
+        <nav
+          className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center gap-8"
+          aria-label="Primary navigation"
+        >
           <Link
             href="/features"
-            className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            className={`text-sm font-medium transition-colors ${
+              pathname === "/features"
+                ? "text-foreground font-semibold"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
           >
             Features
           </Link>
           <Link
             href="/docs"
-            className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            className={`text-sm font-medium transition-colors ${
+              pathname === "/docs"
+                ? "text-foreground font-semibold"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
           >
             Documentation
           </Link>
